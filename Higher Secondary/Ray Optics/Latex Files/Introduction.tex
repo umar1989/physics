@@ -1,0 +1,79 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{tasks}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ left=25mm,
+ right=25mm,
+ top=20mm,
+ bottom=20mm,
+}
+
+\setlength{\parindent}{0pt}
+\renewcommand{\labelitemi}{--}
+
+% Custom command for MCQ questions
+\newcommand{\mcq}[3]{%
+    \item #1 \hfill \textbf{(#2 marks)}
+    \begin{tasks}(2)
+        \task #3[0]
+    \end{tasks}
+}
+
+% Command to insert options easily
+\newcommand{\options}[4]{%
+    \task #1
+    \task #2
+    \task #3
+    \task #4
+}
+
+% Header/Footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Physics}
+\rhead{Class: XI/XII}
+\cfoot{\thepage}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{Physics – Multiple Choice Questions}}\\
+    \vspace{5pt}
+    {\large Total Marks: \underline{\hspace{3cm}} \hfill Date: \underline{\hspace{3cm}}}
+\end{center}
+
+\begin{enumerate}
+
+% Example MCQ
+\item The SI unit of electric current is \hfill \textbf{1 mark}
+\begin{tasks}(2)
+    \task Volt
+    \task Ohm
+    \task Ampere
+    \task Coulomb
+\end{tasks}
+
+\item Work done is zero when force and displacement are \hfill \textbf{1 mark}
+\begin{tasks}(2)
+    \task Perpendicular
+    \task Parallel
+    \task Opposite
+    \task None of these
+\end{tasks}
+
+\item The work done by the gravitational force is negative when the body moves \hfill \textbf{1 mark}
+\begin{tasks}(2)
+    \task Upward
+    \task Downward
+    \task Horizontally
+    \task Circularly
+\end{tasks}
+
+% Add more MCQs below as needed
+
+\end{enumerate}
+\end{document}
