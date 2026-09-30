@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electricity – Class 10 Physics Notes</title>
+  <meta name="description" content="Electric current and potential difference, Ohm’s law, resistance and resistivity, resistors in series and parallel, heating effect of current and electric power.">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>window.MathJax = { svg: { fontCache: "global" } };</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script>
+</head>
+<body data-root="../" data-chapter="class-10/electricity">
+  <main class="page">
+    <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="../index.html#class-10">Class 10</a> › Chapter 11</div>
+    <h1>Electricity</h1>
+    <p class="chapter-lead">Electric current and potential difference, Ohm’s law, resistance and resistivity, resistors in series and parallel, heating effect of current and electric power.</p>
+    <button class="print-btn" type="button" data-print>🖨 Print these notes</button>
+    <div id="toc"></div>
+    <h2 id="charge-current">Electric charge and current</h2>
+    <p>Electric charge is carried by electrons (negative) and protons (positive). The SI unit of charge is the <strong>coulomb (C)</strong>. The charge on one electron is \( e = 1.6 \times 10^{-19}\ \text{C} \), so 1 C is the charge of about \( 6 \times 10^{18} \) electrons.</p>
+    <div class="box definition">
+      <span class="box-title">Electric current</span>
+      <p><strong>Electric current</strong> is the rate of flow of electric charge through a conductor.</p>
+    </div>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Current</div>
+        <div class="f-eq">\( I = \dfrac{Q}{t} \)</div>
+        <div class="f-units">SI unit: ampere (A) = C/s</div>
+      </div>
+      <div class="formula">
+        <div class="f-name">Charge from electrons</div>
+        <div class="f-eq">\( Q = ne \)</div>
+        <div class="f-units">n = number of electrons</div>
+      </div>
+    </div>
+    <p><strong>1 ampere</strong> is the current when 1 coulomb of charge flows through a conductor in 1 second. Small currents are measured in milliampere (1 mA = 10⁻³ A) and microampere (1 µA = 10⁻⁶ A).</p>
+    <ul>
+      <li>By convention, the direction of current is the direction of flow of <strong>positive charge</strong>, which is opposite to the flow of electrons.</li>
+      <li>Current is measured with an <strong>ammeter</strong>, always connected in <strong>series</strong>. An ammeter has very low resistance.</li>
+    </ul>
+
+    <h2 id="potential-difference">Potential difference</h2>
+    <div class="box definition">
+      <span class="box-title">Definition</span>
+      <p>The <strong>potential difference</strong> between two points in a circuit is the work done to move a unit charge from one point to the other.</p>
+    </div>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Potential difference</div>
+        <div class="f-eq">\( V = \dfrac{W}{Q} \)</div>
+        <div class="f-units">SI unit: volt (V) = J/C</div>
+      </div>
+    </div>
+    <p><strong>1 volt</strong> is the potential difference between two points when 1 joule of work is done to move 1 coulomb of charge between them. Potential difference is measured with a <strong>voltmeter</strong>, always connected in <strong>parallel</strong>. A voltmeter has very high resistance. A cell or battery maintains the potential difference that makes charge flow.</p>
+
+    <h2 id="circuit-symbols">Circuit symbols</h2>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Component</th><th>How the symbol is drawn</th></tr>
+      <tr><td>Electric cell</td><td>A long thin line (+) and a short thick line (−) side by side.</td></tr>
+      <tr><td>Battery</td><td>Two or more cell symbols joined in series.</td></tr>
+      <tr><td>Plug key or switch (open / closed)</td><td>A key with or without a dot in the plug; a switch with a gap or a closed line.</td></tr>
+      <tr><td>Connecting wire / wire joint</td><td>A straight line; a filled dot where wires join.</td></tr>
+      <tr><td>Wires crossing without joining</td><td>Two lines crossing with no dot (or with a small hump).</td></tr>
+      <tr><td>Electric bulb</td><td>A circle with a cross or a loop (filament) inside.</td></tr>
+      <tr><td>Resistor</td><td>A zig-zag line (or a small rectangle).</td></tr>
+      <tr><td>Variable resistor (rheostat)</td><td>A resistor symbol with an arrow across it.</td></tr>
+      <tr><td>Ammeter / Voltmeter</td><td>A circle with the letter A / V inside, with + and − terminals.</td></tr>
+    </table>
+    </div>
+
+    <h2 id="ohms-law">Ohm’s law</h2>
+    <div class="box definition">
+      <span class="box-title">Ohm’s law</span>
+      <p>The current through a metallic conductor is directly proportional to the potential difference across its ends, provided its temperature remains the same.</p>
+    </div>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Ohm’s law</div>
+        <div class="f-eq">\( V = IR \)</div>
+        <div class="f-units">R = resistance, SI unit ohm (Ω) = V/A</div>
+      </div>
+    </div>
+    <p>A graph of V against I for a metallic conductor is a <strong>straight line through the origin</strong>; its slope gives the resistance. <strong>1 ohm</strong> is the resistance of a conductor when a potential difference of 1 V across it produces a current of 1 A.</p>
+    <p><strong>Resistance</strong> is the property of a conductor to oppose the flow of charge through it. A <strong>rheostat</strong> is used to change the resistance, and hence the current, in a circuit.</p>
+
+    <h2 id="resistivity">Factors affecting resistance; resistivity</h2>
+    <p>The resistance of a uniform conductor is directly proportional to its <strong>length</strong> \(l\), inversely proportional to its <strong>area of cross-section</strong> \(A\), and depends on the <strong>material</strong> and temperature.</p>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Resistance of a wire</div>
+        <div class="f-eq">\( R = \rho\,\dfrac{l}{A} \)</div>
+        <div class="f-units">\( \rho \) = resistivity, SI unit Ω m</div>
+      </div>
+    </div>
+    <ul>
+      <li><strong>Resistivity</strong> is a property of the material, not of the shape of the wire. It changes with temperature.</li>
+      <li>Metals and alloys have low resistivity (about 10⁻⁸ to 10⁻⁶ Ω m) and are good conductors. Insulators such as rubber and glass have very high resistivity (10¹² to 10¹⁷ Ω m).</li>
+      <li>Copper and aluminium are used for transmission wires because of their low resistivity.</li>
+      <li>Alloys such as <strong>nichrome</strong> have higher resistivity than pure metals and do not oxidise (burn) easily at high temperatures, so they are used in heaters, toasters and electric irons.</li>
+      <li>If a wire is stretched to double its length, its area halves, so its resistance becomes four times.</li>
+    </ul>
+
+    <h2 id="combinations">Resistors in series and parallel</h2>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Series combination</div>
+        <div class="f-eq">\( R_s = R_1 + R_2 + R_3 \)</div>
+        <div class="f-units">same current through each; voltages add</div>
+      </div>
+      <div class="formula">
+        <div class="f-name">Parallel combination</div>
+        <div class="f-eq">\( \dfrac{1}{R_p} = \dfrac{1}{R_1} + \dfrac{1}{R_2} + \dfrac{1}{R_3} \)</div>
+        <div class="f-units">same voltage across each; currents add</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+    <table>
+      <tr><th></th><th>Series</th><th>Parallel</th></tr>
+      <tr><td>Current</td><td>Same through every resistor</td><td>Divides; total current = sum of branch currents</td></tr>
+      <tr><td>Potential difference</td><td>Divides; \( V = V_1 + V_2 + V_3 \)</td><td>Same across every resistor</td></tr>
+      <tr><td>Equivalent resistance</td><td>Greater than the largest resistor</td><td>Less than the smallest resistor</td></tr>
+      <tr><td>If one device fails</td><td>The whole circuit breaks</td><td>Other devices keep working</td></tr>
+    </table>
+    </div>
+    <p><strong>Why household appliances are connected in parallel:</strong> each appliance gets the full mains voltage (220 V), each can be switched on or off separately, a fault in one does not stop the others, and each draws only the current it needs.</p>
+
+    <h2 id="heating-effect">Heating effect of electric current</h2>
+    <p>When current flows through a resistor, part of the electrical energy is always converted into heat. This is the <strong>heating effect of electric current</strong>.</p>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Joule’s law of heating</div>
+        <div class="f-eq">\( H = I^2 R t \)</div>
+        <div class="f-units">H in joule; also \( H = VIt \)</div>
+      </div>
+    </div>
+    <p>Heat produced is directly proportional to (1) the square of the current, (2) the resistance, and (3) the time for which the current flows.</p>
+    <h3 id="heating-applications">Applications</h3>
+    <ul>
+      <li><strong>Electric iron, toaster, heater, kettle</strong> use heating elements made of nichrome.</li>
+      <li><strong>Electric bulb:</strong> the filament is made of <strong>tungsten</strong> (melting point 3380 °C), which glows white-hot and gives light. Bulbs are filled with inert gases such as nitrogen and argon to make the filament last longer.</li>
+      <li><strong>Electric fuse:</strong> a wire of low melting point (an alloy of metals such as aluminium, copper, iron or lead) connected in series. If the current becomes too large, the wire melts and breaks the circuit, protecting appliances. Common fuse ratings are 1 A, 2 A, 3 A, 5 A, 10 A and 15 A.</li>
+    </ul>
+
+    <h2 id="power">Electric power</h2>
+    <div class="box definition">
+      <span class="box-title">Definition</span>
+      <p><strong>Electric power</strong> is the rate at which electrical energy is used or dissipated in a circuit.</p>
+    </div>
+    <div class="formula-grid">
+      <div class="formula">
+        <div class="f-name">Power</div>
+        <div class="f-eq">\( P = VI \)</div>
+        <div class="f-units">SI unit: watt (W); 1 W = 1 V × 1 A</div>
+      </div>
+      <div class="formula">
+        <div class="f-name">Other forms</div>
+        <div class="f-eq">\( P = I^2R = \dfrac{V^2}{R} \)</div>
+        <div class="f-units">using V = IR</div>
+      </div>
+      <div class="formula">
+        <div class="f-name">Commercial unit</div>
+        <div class="f-eq">\( 1\ \text{kWh} = 3.6 \times 10^{6}\ \text{J} \)</div>
+        <div class="f-units">1 kWh = 1 “unit” of electricity</div>
+      </div>
+    </div>
+
+    <h2 id="solved-examples">Solved examples</h2>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 1">A current of 0.5 A flows through a bulb for 10 minutes. How much charge flows through the circuit?</p>
+      <div class="ex-sol">
+        <p>\( t = 10 \times 60 = 600\ \text{s} \)</p>
+        <p>\( Q = It = 0.5 \times 600 = 300\ \text{C} \)</p>
+        <p class="ex-ans">Charge = 300 C.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 2">How much work is done in moving a charge of 2 C across two points with a potential difference of 12 V?</p>
+      <div class="ex-sol">
+        <p>\( W = VQ = 12 \times 2 = 24\ \text{J} \)</p>
+        <p class="ex-ans">Work done = 24 J.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 3">An electric heater draws 4 A from a 60 V supply. What current will it draw if the supply is increased to 120 V?</p>
+      <div class="ex-sol">
+        <p>\( R = \dfrac{V}{I} = \dfrac{60}{4} = 15\ \Omega \)</p>
+        <p>At 120 V: \( I = \dfrac{120}{15} = 8\ \text{A} \)</p>
+        <p class="ex-ans">Current = 8 A (doubling the voltage doubles the current).</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 4">Find the resistance of a copper wire 1 km long with an area of cross-section of 1 mm². (Resistivity of copper = \( 1.62 \times 10^{-8}\ \Omega\,\text{m} \))</p>
+      <div class="ex-sol">
+        <p>\( l = 1000\ \text{m},\ A = 1\ \text{mm}^2 = 1 \times 10^{-6}\ \text{m}^2 \)</p>
+        <p>\( R = \rho\dfrac{l}{A} = \dfrac{1.62 \times 10^{-8} \times 1000}{1 \times 10^{-6}} = 16.2\ \Omega \)</p>
+        <p class="ex-ans">Resistance = 16.2 Ω.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 5">Resistors of 5 Ω, 10 Ω and 30 Ω are connected in parallel across a 12 V battery. Find the current through each resistor, the total current and the equivalent resistance.</p>
+      <div class="ex-sol">
+        <p>\( I_1 = \dfrac{12}{5} = 2.4\ \text{A},\ I_2 = \dfrac{12}{10} = 1.2\ \text{A},\ I_3 = \dfrac{12}{30} = 0.4\ \text{A} \)</p>
+        <p>Total current \( I = 2.4 + 1.2 + 0.4 = 4\ \text{A} \)</p>
+        <p>\( \dfrac{1}{R_p} = \dfrac{1}{5} + \dfrac{1}{10} + \dfrac{1}{30} = \dfrac{6 + 3 + 1}{30} = \dfrac{1}{3} \Rightarrow R_p = 3\ \Omega \) (check: \( 12/3 = 4\ \text{A} \))</p>
+        <p class="ex-ans">2.4 A, 1.2 A and 0.4 A; total 4 A; equivalent resistance 3 Ω.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 6">The same three resistors (5 Ω, 10 Ω, 30 Ω) are now connected in series with the 12 V battery. Find the current and the potential difference across the 30 Ω resistor.</p>
+      <div class="ex-sol">
+        <p>\( R_s = 5 + 10 + 30 = 45\ \Omega \); \( I = \dfrac{12}{45} = 0.27\ \text{A} \)</p>
+        <p>\( V_3 = IR_3 = \dfrac{12}{45} \times 30 = 8\ \text{V} \)</p>
+        <p class="ex-ans">Current ≈ 0.27 A; potential difference across 30 Ω = 8 V.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 7">An electric bulb is rated 100 W, 220 V. Find the current it draws and its resistance. How much energy does it use in 10 hours?</p>
+      <div class="ex-sol">
+        <p>\( I = \dfrac{P}{V} = \dfrac{100}{220} = 0.45\ \text{A} \)</p>
+        <p>\( R = \dfrac{V^2}{P} = \dfrac{220^2}{100} = 484\ \Omega \)</p>
+        <p>Energy \( = 0.1\ \text{kW} \times 10\ \text{h} = 1\ \text{kWh} \) (1 unit)</p>
+        <p class="ex-ans">0.45 A; 484 Ω; 1 kWh.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <p class="ex-q" data-label="Example 8">A current of 4 A flows through a 20 Ω resistor for 30 s. How much heat is produced?</p>
+      <div class="ex-sol">
+        <p>\( H = I^2Rt = 4^2 \times 20 \times 30 = 9600\ \text{J} \)</p>
+        <p class="ex-ans">Heat produced = 9600 J = 9.6 kJ.</p>
+      </div>
+    </div>
+
+    <h2 id="quick-revision">Quick revision</h2>
+    <div class="revision">
+      <ul>
+        <li>\( I = Q/t \) (ampere); \( V = W/Q \) (volt); \( e = 1.6 \times 10^{-19} \) C.</li>
+        <li>Ammeter in series (low resistance); voltmeter in parallel (high resistance).</li>
+        <li>Ohm’s law: \( V = IR \) at constant temperature; V–I graph is a straight line; unit of R is ohm (Ω).</li>
+        <li>\( R = \rho l/A \); resistivity depends on the material and temperature, not on the shape. Unit Ω m.</li>
+        <li>Series: \( R_s = R_1 + R_2 + \dots \), same current. Parallel: \( 1/R_p = 1/R_1 + 1/R_2 + \dots \), same voltage.</li>
+        <li>Homes use parallel wiring: every appliance gets 220 V and works independently.</li>
+        <li>Joule heating \( H = I^2Rt \): used in heaters (nichrome), bulbs (tungsten) and fuses (low melting point).</li>
+        <li>Power \( P = VI = I^2R = V^2/R \) (watt). 1 kWh = \( 3.6 \times 10^6 \) J.</li>
+      </ul>
+    </div>
+  </main>
+  <script src="../js/main.js"></script>
+</body>
+</html>
