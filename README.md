@@ -20,16 +20,24 @@ Each chapter has key concepts, formulas with SI units, solved numericals and a q
 
 **Live:** https://umar1989.github.io/physics/class-10/classroom/
 
-A teaching page for the projector, covering all four Class 10 chapters with 13 simulations:
+A teaching page for the projector, covering the four Class 10 physics chapters (NCERT, rationalised edition) with 13 simulations:
 
 | Chapter | Simulations |
 |---|---|
-| 9. Light | Spherical mirrors and lenses (ray diagrams, u, v, m, power), refraction and glass slab |
-| 10. Human Eye | Myopia and hypermetropia with correction, prism dispersion and Newton's experiment, scattering (blue sky, red sunset) |
-| 11. Electricity | Ohm's law with V–I graph, series and parallel bulbs, resistivity, energy bill and H = I²Rt |
-| 12. Magnetic Effects | Field lines with a movable compass (wire, loop, solenoid, magnet), Fleming's left-hand rule, domestic circuit and fuse |
+| 9. Light | Spherical mirrors and lenses (ray diagrams, u, v, m, R, power), refraction and the rectangular slab |
+| 10. Human Eye | Myopia and hypermetropia with correcting lenses, prism dispersion and Newton's experiment, scattering (why the sky is blue) |
+| 11. Electricity | Ohm's law (Activity 11.1) with a V–I graph, series and parallel bulbs, resistivity, energy bill and H = I²Rt |
+| 12. Magnetic Effects | Field lines with a movable compass (wire, loop, solenoid, bar magnet), Fleming's left-hand rule (based on Activity 12.7), domestic circuit with fuse |
 
-Each topic also has points to explain, formulas, and questions with hidden answers. Teaching tools: pen over the page, blank whiteboard, activity timer, random student picker, bigger text and full screen. Keyboard: ← → topics, 1–4 chapters, P pen, B board, T timer, R pick, F full screen.
+Each topic also has points to explain, formulas, and questions with hidden answers, mostly NCERT's own in-text and exercise questions. Many questions have a **Show in simulation** button that sets up that exact case.
+
+Teaching tools: a pen that draws over the page (the drawing scrolls with the page), a separate blank board, an activity timer, a random roll-number picker that never repeats a student until everyone has had a turn, larger text for the projector, light/dark theme and full screen. Keyboard: ← → topics, 1–4 chapters, P pen, B board, T timer, R pick, F full screen, Esc close.
+
+Notes on accuracy:
+- Sign convention and formulas follow NCERT (mirror 1/v + 1/u = 1/f, m = −v/u; lens 1/v − 1/u = 1/f, m = v/u). Ray diagrams use the usual thin-mirror and thin-lens construction.
+- The colour of the Sun at sunrise and sunset is excluded from the CBSE syllabus; the page shows it only as "extra".
+- NCERT Table 11.2 prints alloy resistivities as × 10⁻⁶ Ω m. Measured values are about 100 times smaller, and those are used (with a note on the page).
+- The eye, prism and sky pictures are schematic; the prism spreads the colours more than real glass so they are easy to see.
 
 Files: `class-10/classroom/index.html`, `classroom.css`, `classroom.js` (plain JavaScript, no libraries).
 

@@ -295,6 +295,7 @@ input[type="number"] { width: 5rem; min-height: 2.1rem; padding: 0.25rem 0.4rem;
 }
 .chip:hover { border-color: var(--accent); }
 .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.chip:disabled { opacity: 0.4; cursor: default; border-color: var(--border); }
 .chip.small { padding: 0.2rem 0.65rem; font-size: 0.82rem; font-family: var(--font-body); font-weight: 600; }
 
 .btn {
