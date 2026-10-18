@@ -405,3 +405,6 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; }
   h2 { break-after: avoid; }
   a { color: #000; text-decoration: none; }
 }
+
+/* Link card to the interactive classroom on the home page */
+.classroom-card { display: block; margin: 0 0 1rem; border-left: 4px solid var(--accent); }

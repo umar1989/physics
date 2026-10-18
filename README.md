@@ -16,6 +16,23 @@ Chapter-wise physics notes for CBSE (NCERT) Class 9 and Class 10 students, prepa
 
 Each chapter has key concepts, formulas with SI units, solved numericals and a quick-revision list.
 
+## Class 10 interactive classroom
+
+**Live:** https://umar1989.github.io/physics/class-10/classroom/
+
+A teaching page for the projector, covering all four Class 10 chapters with 13 simulations:
+
+| Chapter | Simulations |
+|---|---|
+| 9. Light | Spherical mirrors and lenses (ray diagrams, u, v, m, power), refraction and glass slab |
+| 10. Human Eye | Myopia and hypermetropia with correction, prism dispersion and Newton's experiment, scattering (blue sky, red sunset) |
+| 11. Electricity | Ohm's law with V–I graph, series and parallel bulbs, resistivity, energy bill and H = I²Rt |
+| 12. Magnetic Effects | Field lines with a movable compass (wire, loop, solenoid, magnet), Fleming's left-hand rule, domestic circuit and fuse |
+
+Each topic also has points to explain, formulas, and questions with hidden answers. Teaching tools: pen over the page, blank whiteboard, activity timer, random student picker, bigger text and full screen. Keyboard: ← → topics, 1–4 chapters, P pen, B board, T timer, R pick, F full screen.
+
+Files: `class-10/classroom/index.html`, `classroom.css`, `classroom.js` (plain JavaScript, no libraries).
+
 ## Features
 
 - Search box for topics and formulas

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Class 10 Physics Classroom</title>
+  <meta name="description" content="Interactive simulations for teaching CBSE (NCERT) Class 10 physics: light, the human eye, electricity and magnetic effects of current. Includes a pen, whiteboard, timer and student picker for the classroom.">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);var f=localStorage.getItem("cls-fs");if(f)document.documentElement.style.setProperty("--fs",f);}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="classroom.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a class="home" href="../../index.html" title="Back to the notes website">← Notes</a>
+      <span class="title">Class 10 Physics <em>Classroom</em></span>
+    </div>
+    <nav class="chapters" id="chapters" role="tablist" aria-label="Chapters"></nav>
+    <div class="tools" role="toolbar" aria-label="Teaching tools">
+      <button class="tool" id="tPen" type="button" aria-pressed="false" title="Pen: draw over the page (P)">
+        <svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M14 7l3 3"/></svg><span class="tl">Pen</span></button>
+      <button class="tool" id="tBoard" type="button" aria-pressed="false" title="Blank whiteboard (B)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21l4-4 4 4"/></svg><span class="tl">Board</span></button>
+      <button class="tool" id="tTimer" type="button" aria-pressed="false" title="Activity timer (T)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span class="tl">Timer</span></button>
+      <button class="tool" id="tPick" type="button" aria-pressed="false" title="Pick a student at random (R)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span class="tl">Pick</span></button>
+      <button class="tool" id="tSmaller" type="button" title="Smaller text (−)"><span>A−</span></button>
+      <button class="tool" id="tBigger" type="button" title="Bigger text for the projector (+)"><span>A+</span></button>
+      <button class="tool" id="tTheme" type="button" title="Light / dark">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button>
+      <button class="tool" id="tFull" type="button" title="Full screen (F)">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+  </header>
+
+  <nav class="topics" id="topics" aria-label="Topics in this chapter"></nav>
+
+  <main class="layout">
+    <section class="stage-col" aria-live="polite">
+      <div class="stage-head">
+        <div class="chap-label"><span id="chapLabel"></span> · <a id="notesLink" class="notes-link" href="#">Chapter notes</a></div>
+        <h1 id="topicTitle"></h1>
+        <p id="topicLead"></p>
+      </div>
+      <div class="card stage" id="stage"></div>
+      <div class="pager">
+        <button class="btn ghost" id="prev" type="button">← Previous</button>
+        <span id="pos" class="pos"></span>
+        <button class="btn" id="next" type="button">Next →</button>
+      </div>
+    </section>
+
+    <aside class="side-col">
+      <div class="card">
+        <h2>What to explain</h2>
+        <ol class="points" id="points"></ol>
+      </div>
+      <div class="card">
+        <h2>Formulas</h2>
+        <div id="formulas" class="formulas"></div>
+      </div>
+      <div class="card">
+        <h2>Ask the class <button class="chip small" id="revealAll" type="button">Show all answers</button></h2>
+        <div id="questions"></div>
+      </div>
+      <p class="kbd-help">Keys: <kbd>←</kbd> <kbd>→</kbd> topics · <kbd>1</kbd>–<kbd>4</kbd> chapters · <kbd>P</kbd> pen · <kbd>B</kbd> board · <kbd>T</kbd> timer · <kbd>R</kbd> pick · <kbd>F</kbd> full screen · <kbd>Esc</kbd> close</p>
+    </aside>
+  </main>
+
+  <canvas id="ink" aria-hidden="true"></canvas>
+  <div id="inkbar" class="floating card" role="toolbar" aria-label="Pen options">
+    <div class="swatches" id="swatches"></div>
+    <div class="seg" id="penSize">
+      <button type="button" data-s="3" aria-pressed="false">Thin</button>
+      <button type="button" data-s="6" aria-pressed="true">Thick</button>
+    </div>
+    <button class="chip" id="inkErase" type="button" aria-pressed="false">Eraser</button>
+    <button class="chip" id="inkBoard" type="button" aria-pressed="false">Board</button>
+    <button class="chip" id="inkClear" type="button">Clear</button>
+    <button class="btn" id="inkDone" type="button">Done</button>
+  </div>
+
+  <div class="panel card" id="timerPanel" role="dialog" aria-label="Timer">
+    <div class="panel-head"><strong>Activity timer</strong><button class="chip small" type="button" data-close>Close</button></div>
+    <div class="big-num" id="timerDisplay">2:00</div>
+    <div class="row-btns" id="timerPresets"></div>
+    <div class="row-btns">
+      <button class="btn" id="timerGo" type="button">Start</button>
+      <button class="btn ghost" id="timerReset" type="button">Reset</button>
+    </div>
+  </div>
+
+  <div class="panel card" id="pickPanel" role="dialog" aria-label="Pick a student">
+    <div class="panel-head"><strong>Pick a student</strong><button class="chip small" type="button" data-close>Close</button></div>
+    <label class="pick-size">Roll numbers 1 to <input type="number" id="pickN" min="2" max="200" value="40"></label>
+    <div class="big-num" id="pickDisplay">?</div>
+    <p class="pick-note" id="pickNote">Nobody picked yet.</p>
+    <div class="row-btns">
+      <button class="btn" id="pickGo" type="button">Pick</button>
+      <button class="btn ghost" id="pickReset" type="button">Start over</button>
+    </div>
+  </div>
+
+  <script src="classroom.js"></script>
+</body>
+</html>
