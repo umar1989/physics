@@ -18,6 +18,7 @@
   --ray1: #d23c3c;
   --ray2: #13824a;
   --ray3: #2a5bd7;
+  --ray4: #8e44ad;
   --beam: #c98200;
   --object: #1c2233;
   --image: #c0501a;
@@ -50,6 +51,7 @@
   --ray1: #ff6b6b;
   --ray2: #4ccf86;
   --ray3: #7aa3ff;
+  --ray4: #c792ea;
   --beam: #ffc24a;
   --object: #e6e9f2;
   --image: #ff9a5c;
@@ -79,6 +81,7 @@
     --ray1: #ff6b6b;
     --ray2: #4ccf86;
     --ray3: #7aa3ff;
+  --ray4: #c792ea;
     --beam: #ffc24a;
     --object: #e6e9f2;
     --image: #ff9a5c;
@@ -428,3 +431,73 @@ table.bill .num { text-align: right; font-variant-numeric: tabular-nums; }
 @media print {
   .topbar, .topics, .tools, .pager, #ink, #inkbar, .panel { display: none !important; }
 }
+
+/* ============================================================
+   Teaching panels, NCERT tables, exercises (added for the NCERT rebuild)
+   ============================================================ */
+.topics .t-num { font-size: 0.8em; font-weight: 700; color: var(--accent); }
+.topics button[aria-current="true"] .t-num { color: inherit; opacity: 0.8; }
+.topics button.extra { border-style: dashed; font-weight: 600; }
+
+.layout.wide { grid-template-columns: minmax(0, 1fr); max-width: 1100px; }
+.layout.wide .side-col { display: none; }
+.stage.doc { padding: 1rem 1.2rem; }
+
+.side-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.side-tabs button {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  border-radius: 9px 9px 0 0; padding: 0.4rem 0.75rem; font: inherit; font-weight: 600; cursor: pointer;
+}
+.side-tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.side-tabs .count { display: inline-block; margin-left: 0.35rem; font-size: 0.78em; background: var(--surface-2); color: var(--text-soft); border-radius: 999px; padding: 0 0.45rem; }
+.side-tabs button[aria-selected="true"] .count { background: rgba(255,255,255,0.25); color: inherit; }
+.side-body { margin-top: -1px; max-height: calc(100vh - 170px); overflow-y: auto; }
+@media (max-width: 1000px) { .side-body { max-height: none; } }
+.side-body h2 { font-family: var(--font-head); font-size: 1.12rem; margin: 0.2rem 0 0.6rem; }
+.side-body h2 ~ h2 { margin-top: 1.1rem; }
+.side-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; font-weight: 700; color: var(--text-soft); flex-wrap: wrap; }
+
+.box { background: var(--surface-2); border-radius: 9px; padding: 0.6rem 0.8rem; margin-top: 0.9rem; }
+.box h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+.box ul { margin: 0; padding-left: 1.2rem; }
+.box li { margin: 0.25rem 0; }
+.box p { margin: 0.3rem 0; }
+
+.act, .q { border: 1px solid var(--border); border-radius: 9px; padding: 0.6rem 0.75rem; margin: 0.55rem 0; }
+.act h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+.act .act-title { font-weight: 600; color: var(--text-soft); }
+.steps { margin: 0.2rem 0; padding-left: 1.25rem; }
+.steps li { margin: 0.25rem 0; }
+.caution { margin: 0.2rem 0 0.4rem; color: var(--warn); font-weight: 600; }
+.act .ans, .q .ans { display: none; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border); }
+.act.open .ans, .q.open .ans { display: block; }
+.q .ans p { margin: 0.25rem 0; }
+.q p { margin: 0; }
+.opts { margin: 0.35rem 0 0; padding-left: 1.6rem; }
+.opts li { margin: 0.15rem 0; }
+.final { margin-top: 0.4rem !important; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.45rem; }
+.sim-btn { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+.ncert-wrap { overflow-x: auto; margin-top: 1rem; }
+table.ncert { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 520px; }
+table.ncert caption { text-align: left; font-family: var(--font-head); font-weight: 700; font-size: 1rem; padding: 0 0 0.45rem; }
+table.ncert th, table.ncert td { border: 1px solid var(--border); padding: 0.4rem 0.55rem; text-align: left; vertical-align: top; }
+table.ncert thead th { background: var(--surface-2); font-size: 0.88rem; }
+table.ncert tbody th { font-weight: 600; }
+table.ncert tr.hl th, table.ncert tr.hl td { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+table.ncert tr.hl th:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+.table-note { font-size: 0.85rem; color: var(--text-soft); margin: 0.35rem 0 0; }
+
+.ctl.num .num-row { display: flex; align-items: center; gap: 0.35rem; }
+.ctl.num .unit { color: var(--text-soft); font-weight: 600; }
+.calc-out { font-weight: 700; font-size: 1.05rem; margin: 0.6rem 0 0; flex-basis: 100%; }
+
+.exq { margin: 0.7rem 0; }
+.sum-h { font-family: var(--font-head); font-size: 1.2rem; margin: 0.4rem 0 0.6rem; }
+.summary { margin: 0 0 1rem; padding-left: 1.3rem; }
+.summary li { margin: 0.35rem 0; }
+.formulas.grid2 { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+.symbol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.6rem; margin-top: 0.8rem; }
+.tag { display: inline-block; font-size: 0.74em; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 0.05rem 0.5rem; margin-right: 0.4rem; vertical-align: 0.1em; }

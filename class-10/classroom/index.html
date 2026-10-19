@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Class 10 Physics Classroom</title>
-  <meta name="description" content="Interactive simulations for teaching CBSE (NCERT) Class 10 physics: light, the human eye, electricity and magnetic effects of current. Includes a pen, whiteboard, timer and student picker for the classroom.">
+  <meta name="description" content="Interactive NCERT Class 10 physics for teaching: every section of Light, the Human Eye, Electricity and Magnetic Effects of Electric Current, with simulations, NCERT tables, activities, worked examples, in-text questions and exercises with answers.">
   <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);var f=localStorage.getItem("cls-fs");if(f)document.documentElement.style.setProperty("--fs",f);}catch(e){}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,9 +36,9 @@
     </div>
   </header>
 
-  <nav class="topics" id="topics" aria-label="Topics in this chapter"></nav>
+  <nav class="topics" id="topics" aria-label="Sections of this chapter"></nav>
 
-  <main class="layout">
+  <main class="layout" id="layout">
     <section class="stage-col" aria-live="polite">
       <div class="stage-head">
         <div class="chap-label"><span id="chapLabel"></span> · <a id="notesLink" class="notes-link" href="#">Chapter notes</a></div>
@@ -53,20 +53,10 @@
       </div>
     </section>
 
-    <aside class="side-col">
-      <div class="card">
-        <h2>What to explain</h2>
-        <ol class="points" id="points"></ol>
-      </div>
-      <div class="card">
-        <h2>Formulas</h2>
-        <div id="formulas" class="formulas"></div>
-      </div>
-      <div class="card">
-        <h2>Ask the class <button class="chip small" id="revealAll" type="button">Show all answers</button></h2>
-        <div id="questions"></div>
-      </div>
-      <p class="kbd-help">Keys: <kbd>←</kbd> <kbd>→</kbd> topics · <kbd>1</kbd>–<kbd>4</kbd> chapters · <kbd>P</kbd> pen · <kbd>B</kbd> board · <kbd>T</kbd> timer · <kbd>R</kbd> pick · <kbd>F</kbd> full screen · <kbd>Esc</kbd> close</p>
+    <aside class="side-col" id="side">
+      <div class="side-tabs" role="tablist" aria-label="Teaching material" id="sideTabs"></div>
+      <div class="card side-body" id="sideBody"></div>
+      <p class="kbd-help">Keys: <kbd>←</kbd> <kbd>→</kbd> sections · <kbd>1</kbd>–<kbd>4</kbd> chapters · <kbd>P</kbd> pen · <kbd>B</kbd> board · <kbd>T</kbd> timer · <kbd>R</kbd> pick · <kbd>F</kbd> full screen · <kbd>Esc</kbd> close</p>
     </aside>
   </main>
 
@@ -104,6 +94,15 @@
     </div>
   </div>
 
-  <script src="classroom.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/light.js"></script>
+  <script src="js/eye.js"></script>
+  <script src="js/electricity.js"></script>
+  <script src="js/magnetism.js"></script>
+  <script src="js/content-9.js"></script>
+  <script src="js/content-10.js"></script>
+  <script src="js/content-11.js"></script>
+  <script src="js/content-12.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

@@ -39,7 +39,7 @@ Notes on accuracy:
 - NCERT Table 11.2 prints alloy resistivities as × 10⁻⁶ Ω m. Measured values are about 100 times smaller, and those are used (with a note on the page).
 - The eye, prism and sky pictures are schematic; the prism spreads the colours more than real glass so they are easy to see.
 
-Files: `class-10/classroom/index.html`, `classroom.css`, `classroom.js` (plain JavaScript, no libraries).
+Files: `class-10/classroom/index.html`, `classroom.css` and `js/` (core helpers, one simulation file per chapter, one NCERT content file per chapter, and `app.js` for the page). Plain JavaScript, no libraries.
 
 ## Features
 
