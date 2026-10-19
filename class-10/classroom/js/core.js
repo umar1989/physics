@@ -120,23 +120,101 @@ function vArrow(ctx, x, yFrom, yTo, color, { width = 3, dash = null, alpha = 1 }
   line(ctx, x, yFrom, x, yTo - dirn * hs * 0.6, color, width, dash, alpha);
   head(ctx, x, yTo, dirn > 0 ? Math.PI / 2 : -Math.PI / 2, hs, color, alpha);
 }
-function label(ctx, str, x, y, { color = "#000", size = 13, align = "center", base = "middle", weight = 600, bg = null, pad = 4, italic = false } = {}) {
+/* break a string into lines no wider than maxW; the lines are then evened out,
+   so that a wrapped label does not end with one short word on a line of its own */
+function wrapWords(ctx, str, maxW, balance = true) {
+  const greedy = mw => {
+    const out = []; let cur = "";
+    for (const w of str.split(" ")) {
+      const t = cur ? cur + " " + w : w;
+      if (cur && ctx.measureText(t).width > mw) { out.push(cur); cur = w; } else cur = t;
+    }
+    if (cur) out.push(cur);
+    return out;
+  };
+  const lines = greedy(maxW);
+  if (!balance || lines.length < 2) return lines;
+  let lo = ctx.measureText(str).width / lines.length, hi = maxW, best = lines;
+  for (let k = 0; k < 9 && hi - lo > 1; k++) {
+    const mid = (lo + hi) / 2, t = greedy(mid);
+    if (t.length <= lines.length) { best = t; hi = mid; } else lo = mid;
+  }
+  return best;
+}
+/* Lay out a label. "\n" starts a new line. maxW: if a line is wider than
+   this, the type is made a little smaller and, if it still does not fit,
+   the text is wrapped onto more lines. The anchor (base = top / middle /
+   bottom) stays where it was asked for. box = [x0, y0, x1, y1] with padding. */
+function labelLayout(ctx, str, x, y, { size = 13, align = "center", base = "middle", weight = 600, pad = 4, italic = false, maxW = 0 } = {}) {
+  const font = s => `${italic ? "italic " : ""}${weight} ${Math.round(s * CR.fontScale)}px ${FONT}`;
   ctx.save();
-  ctx.font = `${italic ? "italic " : ""}${weight} ${Math.round(size * CR.fontScale)}px ${FONT}`;
-  ctx.textAlign = align;
-  ctx.textBaseline = base;
+  ctx.font = font(size);
+  let lines = String(str).split("\n");
+  const widest = () => Math.max(...lines.map(l => ctx.measureText(l).width));
+  if (maxW > 0) {
+    const w0 = widest();
+    if (w0 > maxW) {
+      size = Math.max(size * 0.85, size * maxW / w0);
+      ctx.font = font(size);
+      if (widest() > maxW + 0.5) lines = lines.flatMap(l => wrapWords(ctx, l, maxW));
+    }
+  }
+  const tw = widest();
+  ctx.restore();
+  const fh = size * CR.fontScale, lh = fh * 1.2, n = lines.length;
+  const top = base === "top" || base === "hanging", right = align === "right" || align === "end";
+  const y0 = base === "middle" ? y - (n - 1) * lh / 2 : top ? y : y - (n - 1) * lh;
+  const bw = tw + pad * 2, bh = fh + (n - 1) * lh + pad * 2;
+  const bx = align === "center" ? x - bw / 2 : right ? x - bw + pad : x - pad;
+  const by = base === "middle" ? y - bh / 2 : top ? y - pad : y - bh + pad;
+  return { lines, font: font(size), y0, lh, box: [bx, by, bx + bw, by + bh] };
+}
+function labelBox(ctx, str, x, y, o = {}) { return labelLayout(ctx, str, x, y, o).box; }
+function label(ctx, str, x, y, o = {}) {
+  const { color = "#000", align = "center", base = "middle", bg = null } = o;
+  const L = labelLayout(ctx, str, x, y, o);
+  ctx.save();
+  ctx.font = L.font; ctx.textAlign = align; ctx.textBaseline = base;
   if (bg) {
-    const tw = ctx.measureText(str).width + pad * 2;
-    const th = size * CR.fontScale + pad * 2;
-    const bx = align === "center" ? x - tw / 2 : align === "right" ? x - tw + pad : x - pad;
-    const by = base === "middle" ? y - th / 2 : base === "top" ? y - pad : y - th + pad;
-    ctx.fillStyle = bg;
-    roundRect(ctx, bx, by, tw, th, 5);
-    ctx.fill();
+    const [x0, y0, x1, y1] = L.box;
+    ctx.fillStyle = bg; roundRect(ctx, x0, y0, x1 - x0, y1 - y0, 5); ctx.fill();
   }
   ctx.fillStyle = color;
-  ctx.fillText(str, x, y);
+  L.lines.forEach((l, i) => ctx.fillText(l, x, L.y0 + i * L.lh));
   ctx.restore();
+  return L.box;
+}
+/* Place labels one after another without letting them overlap each other or
+   run off the canvas: each label tries its candidate anchor points in turn. */
+function labelPlacer(ctx, W, H, margin = 2) {
+  const boxes = [], tol = 1.5;
+  // how badly a box would clash: area shared with labels already placed, plus area off the canvas
+  const cost = b => {
+    let c = 0;
+    for (const o of boxes) {
+      const ix = Math.min(b[2], o[2]) - Math.max(b[0], o[0]), iy = Math.min(b[3], o[3]) - Math.max(b[1], o[1]);
+      if (ix > tol && iy > tol) c += ix * iy;
+    }
+    const out = Math.max(0, margin - b[0]) + Math.max(0, b[2] - (W - margin)), outY = Math.max(0, margin - b[1]) + Math.max(0, b[3] - (H - margin));
+    return c + 3 * (out * (b[3] - b[1]) + outY * (b[2] - b[0]));
+  };
+  return {
+    block(b) { boxes.push(b); },
+    cost,      // for shapes placed by hand: 0 means the box is free
+    // cands: [[x, y], …] or [[x, y, extraOpts], …]. The first candidate that is free is used;
+    // if none is free and force is set, the one that clashes least is used.
+    put(str, cands, o = {}, force = true) {
+      let best = null, bestC = Infinity;
+      for (const [x, y, extra] of cands) {
+        const oo = extra ? Object.assign({}, o, extra) : o;
+        const c = cost(labelBox(ctx, str, x, y, oo));
+        if (c <= 0) { boxes.push(label(ctx, str, x, y, oo)); return true; }
+        if (c < bestC) { bestC = c; best = [x, y, oo]; }
+      }
+      if (force && best) boxes.push(label(ctx, str, best[0], best[1], best[2]));
+      return false;
+    }
+  };
 }
 function textWidth(ctx, str, size = 13, weight = 600) {
   ctx.save(); ctx.font = `${weight} ${Math.round(size * CR.fontScale)}px ${FONT}`;
@@ -403,7 +481,7 @@ function ncertTable(parent, { caption, head: hd, rows, note }) {
 Object.assign(CR, {
   $, h, clamp, lerp, DEG, MINUS, store, fmt, sgnf, sci, nice, br, supNum,
   FONT, isDark, pal,
-  line, head, drawRay, vArrow, label, textWidth, roundRect, circle, arcAngle, toEdge, shade, rgb, mix, polyline, arrowsAlong, hatch,
+  line, head, drawRay, vArrow, label, labelBox, labelPlacer, wrapWords, textWidth, roundRect, circle, arcAngle, toEdge, shade, rgb, mix, polyline, arrowsAlong, hatch,
   pathInfo, pointAt, drawFlow,
   resetLifecycle, onFrame, makeCanvas,
   controls, slider, seg, select, numInput, chipRow, chip, toggles, readouts, ncertTable

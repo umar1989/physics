@@ -20,16 +20,18 @@ Each chapter has key concepts, formulas with SI units, solved numericals and a q
 
 **Live:** https://umar1989.github.io/physics/class-10/classroom/
 
-A teaching page for the projector, covering the four Class 10 physics chapters (NCERT, rationalised edition) with 13 simulations:
+A teaching page for the projector that follows the four Class 10 physics chapters of the NCERT textbook (rationalised edition) section by section: 43 sections and 22 simulations.
 
-| Chapter | Simulations |
+| Chapter | Sections and simulations |
 |---|---|
-| 9. Light | Spherical mirrors and lenses (ray diagrams, u, v, m, R, power), refraction and the rectangular slab |
-| 10. Human Eye | Myopia and hypermetropia with correcting lenses, prism dispersion and Newton's experiment, scattering (why the sky is blue) |
-| 11. Electricity | Ohm's law (Activity 11.1) with a V–I graph, series and parallel bulbs, resistivity, energy bill and H = I²Rt |
-| 12. Magnetic Effects | Field lines with a movable compass (wire, loop, solenoid, bar magnet), Fleming's left-hand rule (based on Activity 12.7), domestic circuit with fuse |
+| 9. Light | 16 sections. Plane mirror; spherical mirrors and lenses with ray diagrams for every object position in Tables 9.1, 9.2, 9.4 and 9.5, including an object at infinity; the four ray rules for mirrors and three for lenses; sign convention; mirror and lens formulas with magnification; refraction, the glass slab and the coin in water; refractive index (Table 9.3); power of a lens |
+| 10. Human Eye | 8 sections. Parts of the eye; accommodation; myopia, hypermetropia and presbyopia with correcting lenses (and bifocals); refraction through a prism (Activity 10.1); dispersion, Newton's two prisms and the rainbow; atmospheric refraction (twinkling stars, advance sunrise and delayed sunset); Tyndall effect, the blue sky and red danger signals |
+| 11. Electricity | 9 sections. Current and charge; potential difference; circuit symbols with a quiz; Ohm's law (Activities 11.1 and 11.2) with a V–I graph; resistivity (Activity 11.3, Table 11.2); resistors and bulbs in series and parallel; heating effect (Joule's law, fuse, bulb); electric power and the energy bill |
+| 12. Magnetic Effects | 10 sections. Oersted's experiment (Activities 12.1 and 12.4); iron filings and field lines, with a compass you can move or use to trace a field line (12.2, 12.3); straight wire, right-hand thumb rule, circular loop and solenoid (12.5, 12.6); force on a rod between the poles of a horse-shoe magnet (12.7); Fleming's left-hand rule; domestic circuits with fuses, overloading, short circuit, earthing and the AC supply |
 
-Each topic also has points to explain, formulas, and questions with hidden answers, mostly NCERT's own in-text and exercise questions. Many questions have a **Show in simulation** button that sets up that exact case.
+Each section has the NCERT activities (steps and what students observe), worked examples, in-text questions and points to explain, with formulas and the NCERT tables. Each chapter ends with all its NCERT exercise questions and the "What you have learnt" summary. Answers stay hidden until you show them, and most activities, examples and questions have a **Show in simulation** button that sets up that exact case.
+
+Labels in the diagrams are placed so that they never cover one another, the object or the image, on a projector or on a phone.
 
 Teaching tools: a pen that draws over the page (the drawing scrolls with the page), a separate blank board, an activity timer, a random roll-number picker that never repeats a student until everyone has had a turn, larger text for the projector, light/dark theme and full screen. Keyboard: ← → topics, 1–4 chapters, P pen, B board, T timer, R pick, F full screen, Esc close.
 

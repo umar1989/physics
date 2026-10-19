@@ -3,7 +3,7 @@
    ============================================================ */
 "use strict";
 (function () {
-const { h, clamp, lerp, DEG, fmt, sgnf, pal, line, head, drawRay, vArrow, label, textWidth, roundRect, circle, toEdge,
+const { h, clamp, lerp, DEG, fmt, sgnf, pal, line, head, drawRay, vArrow, label, labelPlacer, textWidth, roundRect, circle, toEdge,
   rgb, mix, onFrame, makeCanvas, controls, slider, seg, numInput, chipRow, chip, toggles, readouts } = CR;
 
 const norm = v => { const l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
@@ -17,8 +17,10 @@ function arcBetween(ctx, x, y, r, u, v, color, txt, o = {}) {
   ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1.6;
   ctx.beginPath(); ctx.arc(x, y, r, a1, a1 + d, d < 0); ctx.stroke(); ctx.restore();
   if (txt) {
-    const am = a1 + d / 2, off = o.off ?? 12;
-    label(ctx, txt, x + Math.cos(am) * (r + off), y + Math.sin(am) * (r + off), { color, size: o.size || 13, weight: 700, bg: o.bg || null, pad: 2 });
+    const am = a1 + d / 2, off = o.off ?? 12, lo = { color, size: o.size || 13, weight: 700, bg: o.bg || null, pad: 2 };
+    const at = k => [x + Math.cos(am) * (r + off + k), y + Math.sin(am) * (r + off + k)];
+    if (o.pl) o.pl.put(txt, [at(0), at(10), at(20), at(-6)], lo);   // o.pl: a label placer, to keep clear of other labels
+    else label(ctx, txt, ...at(0), lo);
   }
 }
 /* where a ray from (x, y) along d leaves a circle that contains the point */
@@ -283,7 +285,6 @@ CR.sims.eye = function (stage, opt = {}) {
     ctx.save(); ctx.beginPath(); ctx.ellipse(xE, ay, rx, a * 1.12, 0, 0, Math.PI * 2);
     ctx.fillStyle = p.dark ? "rgba(110,180,240,0.25)" : "rgba(70,150,215,0.22)"; ctx.fill();
     ctx.strokeStyle = p.glassEdge; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
-    label(ctx, "Eye lens", xE, ay - 0.62 * r - 12, { color: p.soft, size: 12 });
 
     // spectacle lens (a bifocal lens has a concave upper part and a convex lower part)
     const hl = a * 1.7, t = 9;
@@ -302,8 +303,11 @@ CR.sims.eye = function (stage, opt = {}) {
       label(ctx, part === "concave" ? "Using the upper, concave part" : "Using the lower, convex part", xC + 12, ay - hl - 12, { color: p.soft, size: 11, align: "right" });
     } else if (useLens) {
       lensShape(part, ay - hl, ay + hl, glass);
-      label(ctx, part === "convex" ? "Convex lens (+)" : "Concave lens (−)", xC, ay - hl - 12, { color: p.glassEdge, size: 12, weight: 700 });
+      label(ctx, part === "convex" ? "Convex lens (+)" : "Concave lens (−)", xC, ay - hl - 12, { color: p.glassEdge, size: 12, weight: 700, maxW: 2 * (xE - xC) - 16 });
     }
+    // the eye lens: above it, or just to its right when the spectacle lens is close
+    const yEL = ay - 0.62 * r - 12, eyeTxt = "Eye lens";
+    label(ctx, eyeTxt, useLens || (fix === "on" && cond === "bifocal") ? xE + 4 : xE, yEL, { color: p.soft, size: 12, align: useLens || (fix === "on" && cond === "bifocal") ? "left" : "center" });
 
     // rays (heights measured upwards from the axis)
     const lenses = [];
@@ -519,7 +523,8 @@ CR.sims.prism = function (stage, opt = {}) {
     // slit in a cardboard sheet
     const sx = lerp(inc.start[0], inc.P0[0], 0.45), sy = lerp(inc.start[1], inc.P0[1], 0.45);
     line(ctx, sx, sy - 70, sx, sy - 8, p.text, 5); line(ctx, sx, sy + 8, sx, sy + 70, p.text, 5);
-    label(ctx, "Slit in cardboard", sx, sy - 82, { color: p.soft, size: 12 });
+    const slitT = "Slit in cardboard", slitW = textWidth(ctx, slitT, 12) / 2 + 6;
+    label(ctx, slitT, clamp(sx, slitW, w - slitW), sy - 82, { color: p.soft, size: 12 });
     line(ctx, inc.P0[0] - inc.nIn[0] * 50, inc.P0[1] - inc.nIn[1] * 50, inc.P0[0] + inc.nIn[0] * 30, inc.P0[1] + inc.nIn[1] * 30, p.soft, 1.3, [4, 4]);
     const results = [];
     SPEC.forEach(([name, col], k) => {
@@ -594,29 +599,35 @@ CR.sims.prism = function (stage, opt = {}) {
     drawRay(ctx, S0[0], S0[1], Ep[0], Ep[1], p.r1, { width: 3 });
     drawRay(ctx, Ep[0], Ep[1], Fp[0], Fp[1], p.r1, { width: 3 });
     drawRay(ctx, Fp[0], Fp[1], Sn[0], Sn[1], p.r1, { width: 3 });
-    // pins
-    const pin = (pt, name, dx, dy) => { circle(ctx, pt[0], pt[1], 5, p.surface, p.text, 2); label(ctx, name, pt[0] + dx, pt[1] + dy, { color: p.text, size: 13, weight: 700 }); };
+    // pins, points and labels; the labels are placed so that none hides another
+    const PL = labelPlacer(ctx, w, H);
+    const lt = { color: p.text, size: 13, weight: 700 };
+    const pin = (pt, name, dx, dy) => { circle(ctx, pt[0], pt[1], 5, p.surface, p.text, 2); PL.put(name, [[pt[0] + dx, pt[1] + dy], [pt[0] - dx, pt[1] - dy], [pt[0] + 16, pt[1]], [pt[0] - 16, pt[1]]], lt); };
     const lenIn = Math.hypot(Ep[0] - S0[0], Ep[1] - S0[1]), lenOut = Math.hypot(Sn[0] - Fp[0], Sn[1] - Fp[1]);
     pin([Ep[0] - d1[0] * lenIn * 0.72, Ep[1] - d1[1] * lenIn * 0.72], "P", -4, 16);
     pin([Ep[0] - d1[0] * lenIn * 0.4, Ep[1] - d1[1] * lenIn * 0.4], "Q", -4, 16);
     pin([Fp[0] + d3[0] * Math.min(lenOut * 0.35, 90), Fp[1] + d3[1] * Math.min(lenOut * 0.35, 90)], "R", 4, -16);
     pin([Fp[0] + d3[0] * Math.min(lenOut * 0.7, 180), Fp[1] + d3[1] * Math.min(lenOut * 0.7, 180)], "S", 4, -16);
-    label(ctx, "E", Ep[0] - 10, Ep[1] - 16, { color: p.text, size: 13, weight: 700 });
-    label(ctx, "F", Fp[0] + 14, Fp[1] - 8, { color: p.text, size: 13, weight: 700 });
-    label(ctx, "A", A[0], A[1] - 13, { color: p.text, size: 13, weight: 700 });
-    label(ctx, "B", B[0] - 12, B[1] + 6, { color: p.text, size: 13, weight: 700 });
-    label(ctx, "C", C[0] + 12, C[1] + 6, { color: p.text, size: 13, weight: 700 });
+    PL.put("E", [[Ep[0] - 10, Ep[1] - 16], [Ep[0] - 16, Ep[1] + 4]], lt);
+    PL.put("F", [[Fp[0] + 14, Fp[1] - 8], [Fp[0] + 16, Fp[1] + 8]], lt);
+    PL.put("A", [[A[0], A[1] - 13]], lt);
+    PL.put("B", [[B[0] - 12, B[1] + 6], [B[0] - 4, B[1] + 16]], lt);
+    PL.put("C", [[C[0] + 12, C[1] + 6], [C[0] + 4, C[1] + 16]], lt);
     // angles
     const back = [-d1[0], -d1[1]];
-    arcBetween(ctx, Ep[0], Ep[1], 30, back, [-nE[0], -nE[1]], p.r3, "i");
-    arcBetween(ctx, Ep[0], Ep[1], 30, d2, nE, p.r2, "r");
-    arcBetween(ctx, Fp[0], Fp[1], 30, d3, [-nF[0], -nF[1]], p.r3, "e");
-    arcBetween(ctx, A[0], A[1], 26, [B[0] - A[0], B[1] - A[1]], [C[0] - A[0], C[1] - A[1]], p.accent, "A", { off: 10 });
-    if (X) arcBetween(ctx, X[0], X[1], 34, d1, d3, p.accent, "D", { off: 12, bg: p.surface2 });
-    label(ctx, "Incident ray PE", lerp(S0[0], Ep[0], 0.2), lerp(S0[1], Ep[1], 0.2) + 18, { color: p.r1, size: 12, align: "left" });
-    const eLab = "Emergent ray FS", eW = textWidth(ctx, eLab, 12), mo = Math.min(lenOut * 0.5, 135);
-    const ex0 = Fp[0] + d3[0] * mo - d3[1] * 22, ey0 = Fp[1] + d3[1] * mo + d3[0] * 22;
-    label(ctx, eLab, clamp(ex0, eW / 2 + 6, w - eW / 2 - 6), Math.min(ey0, H - 14), { color: p.r1, size: 12 });
+    arcBetween(ctx, Ep[0], Ep[1], 30, back, [-nE[0], -nE[1]], p.r3, "i", { pl: PL });
+    arcBetween(ctx, Ep[0], Ep[1], 30, d2, nE, p.r2, "r", { pl: PL });
+    arcBetween(ctx, Fp[0], Fp[1], 30, d3, [-nF[0], -nF[1]], p.r3, "e", { pl: PL });
+    arcBetween(ctx, A[0], A[1], 26, [B[0] - A[0], B[1] - A[1]], [C[0] - A[0], C[1] - A[1]], p.accent, "A", { off: 10, pl: PL });
+    if (X) arcBetween(ctx, X[0], X[1], 34, d1, d3, p.accent, "D", { off: 12, bg: p.surface2, pl: PL });
+    // names of the rays, beside them: try a few places along each ray, on either side
+    const alongRay = (P0, d, from, to, side) => [side, side + Math.sign(side) * 14].flatMap(sd => [0.5, 0.3, 0.7, 0.15, 0.85, 0.02, 1].flatMap(f => {
+      const m = lerp(from, to, f), x = P0[0] + d[0] * m, y = P0[1] + d[1] * m;
+      return [[x - d[1] * sd, y + d[0] * sd], [x + d[1] * sd, y - d[0] * sd]];
+    }));
+    const xL = Math.max(S0[0], 0) + 6, s0y = (dy, k) => [xL + k, S0[1] + d1[1] / d1[0] * (xL + k - S0[0]) + dy, { align: "left" }];   // starting at the left edge
+    PL.put("Incident ray PE", [...alongRay(S0, d1, 0, lenIn * 0.55, 18), s0y(-18, 0), s0y(18, 0), s0y(-32, 0), s0y(32, 0), s0y(48, 0), s0y(-48, 0), s0y(64, 0)], { color: p.r1, size: 12, bg: p.surface2 });
+    PL.put("Emergent ray FS", alongRay(Fp, d3, 30, Math.min(lenOut, 270), -22), { color: p.r1, size: 12, bg: p.surface2 });   // first try the side away from the prism
 
     const n = 1.5, i = iDeg * DEG, r1 = Math.asin(Math.sin(i) / n), r2 = 60 * DEG - r1, e = Math.asin(n * Math.sin(r2));
     const Ddeg = iDeg + e / DEG - 60;
@@ -671,13 +682,17 @@ CR.sims.prism = function (stage, opt = {}) {
     const at = (e, f) => [lerp(e.P3[0], e.P5[0], f), lerp(e.P3[1], e.P5[1], f)];
     const rA = at(red, 0.8), vA = at(vio, 0.8), dd = norm([red.P5[0] - red.P3[0], red.P5[1] - red.P3[1]]), perp = [-dd[1], dd[0]];
     const sgn = Math.sign((rA[0] - vA[0]) * perp[0] + (rA[1] - vA[1]) * perp[1]) || 1;
-    label(ctx, "Red", rA[0] + perp[0] * sgn * 22, rA[1] + perp[1] * sgn * 22, { color: red.col, size: 12, weight: 700, bg: p.surface2 });
-    label(ctx, "Violet", vA[0] - perp[0] * sgn * 26, vA[1] - perp[1] * sgn * 26, { color: vio.col, size: 12, weight: 700, bg: p.surface2 });
-    label(ctx, "1. Refraction and dispersion", xIn - 6, y0 - 16, { color: p.accent, size: 12, align: "left", weight: 700, bg: p.surface2 });
-    label(ctx, "2. Internal reflection", red.P2[0] + 10, red.P2[1], { color: p.accent, size: 12, align: "left", weight: 700, bg: p.surface2 });
-    label(ctx, "3. Refraction", red.P3[0] - 10, red.P3[1] + 18, { color: p.accent, size: 12, align: "right", weight: 700, bg: p.surface2 });
-    label(ctx, "To an observer with the Sun behind", 10, H - 30, { color: p.soft, size: 12, align: "left" });
-    label(ctx, "Spread of colours exaggerated so it is easy to see", 10, H - 12, { color: p.soft, size: 11, align: "left" });
+    // labels, placed so that none hides another
+    const PL = labelPlacer(ctx, w, H);
+    PL.put("Spread of colours exaggerated so it is easy to see", [[10, H - 6, { align: "left", base: "bottom" }]], { color: p.soft, size: 11, maxW: w - 20 });
+    PL.put("To an observer with the Sun behind", [[10, H - 24, { align: "left", base: "bottom" }]], { color: p.soft, size: 12, maxW: w - 20 });
+    const st = { color: p.accent, size: 12, weight: 700, bg: p.surface2 };
+    PL.put("1. Refraction and dispersion", [[xIn - 6, y0 - 16, { align: "left" }], [w - 6, y0 - 16, { align: "right" }], [xIn - 6, y0 - 34, { align: "left" }], [w - 6, y0 - 34, { align: "right" }]], st);
+    PL.put("2. Internal reflection", [[red.P2[0] + 10, red.P2[1], { align: "left" }], [w - 6, red.P2[1] - 20, { align: "right" }], [w - 6, red.P2[1] + 20, { align: "right" }], [red.P2[0] - 10, red.P2[1] + 26, { align: "right" }]], st);
+    PL.put("3. Refraction", [[red.P3[0] - 10, red.P3[1] + 18, { align: "right" }], [red.P3[0] + 10, red.P3[1] + 24, { align: "left" }], [red.P3[0] - 10, red.P3[1] - 18, { align: "right" }]], st);
+    const onRay = (e, k) => [0.8, 0.65, 0.5, 0.9].map(f => { const q = at(e, f); return [q[0] + perp[0] * k, q[1] + perp[1] * k]; });
+    PL.put("Red", onRay(red, sgn * 22), { color: red.col, size: 12, weight: 700, bg: p.surface2 });
+    PL.put("Violet", onRay(vio, -sgn * 26), { color: vio.col, size: 12, weight: 700, bg: p.surface2 });
     ro([
       { k: "A rainbow", v: "A natural spectrum appearing in the sky after a rain shower, caused by dispersion of sunlight by tiny water droplets in the atmosphere.", wide: true },
       { k: "Inside each drop", v: "The drop acts like a small prism: it refracts and disperses the sunlight, reflects it internally, and refracts it again as it comes out. Different colours reach the observer's eye.", wide: true },
@@ -805,7 +820,7 @@ CR.sims.atmos = function (stage, opt = {}) {
     ctx.save(); ctx.strokeStyle = "#e9edf5"; ctx.lineWidth = 2.5; ctx.lineCap = "round";
     ctx.beginPath(); ctx.arc(ox, oy - 26, 5, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(ox, oy - 21); ctx.lineTo(ox, oy - 9); ctx.moveTo(ox, oy - 9); ctx.lineTo(ox - 5, oy); ctx.moveTo(ox, oy - 9); ctx.lineTo(ox + 5, oy); ctx.stroke(); ctx.restore();
-    label(ctx, "Layers of air: denser and with a higher refractive index near the ground", 10, H - 30, { color: "rgba(255,255,255,0.8)", size: 11, align: "left" });
+    label(ctx, "Layers of air: denser and with a higher refractive index near the ground", 10, H - 24, { color: "rgba(255,255,255,0.8)", size: 11, align: "left", base: "bottom", maxW: w - 20 });
     label(ctx, "Not to scale; bending exaggerated", 10, H - 12, { color: "rgba(255,255,255,0.7)", size: 11, align: "left" });
     const raised = (al - elev) / DEG;
     ro([

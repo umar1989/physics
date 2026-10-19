@@ -4,7 +4,7 @@
    ============================================================ */
 "use strict";
 (function () {
-const { h, clamp, lerp, fmt, sci, nice, pal, line, head, label, textWidth, roundRect, circle, shade,
+const { h, clamp, lerp, fmt, sci, nice, pal, line, head, label, labelPlacer, textWidth, roundRect, circle, shade,
   pathInfo, drawFlow, onFrame, makeCanvas, controls, slider, seg, select, numInput, chipRow, chip, readouts, ncertTable } = CR;
 const E_CH = 1.6e-19;
 
@@ -27,8 +27,9 @@ function battery(ctx, x, ym, n, color, p, showSigns = true) {
     if (j < n - 1) line(ctx, x, yy + 9, x, yy + step, color, 2);
   }
   if (showSigns) {
-    label(ctx, "+", x - 24, top, { color: p.r1, size: 15, weight: 700 });
-    label(ctx, "−", x - 24, top + h0, { color: p.r3, size: 15, weight: 700 });
+    const xs = Math.max(x - 24, 7);   // keep the signs on the canvas when the cell is near its edge
+    label(ctx, "+", xs, top, { color: p.r1, size: 15, weight: 700 });
+    label(ctx, "−", xs, top + h0, { color: p.r3, size: 15, weight: 700 });
   }
   return { top, bot: top + h0 };
 }
@@ -113,7 +114,8 @@ CR.sims.current = function (stage, opt = {}) {
     bulbGlyph(ctx, xm, y1, rb, on ? 0.75 : 0, p);
     label(ctx, "Bulb", xm, y1 + rb + 14, { color: p.soft, size: 12 });
     plugKey(ctx, x2, ym, closed, p, Math.PI / 2);
-    label(ctx, "Plug key", x2 + 16, ym, { color: p.soft, size: 12, align: "left" });
+    const pkR = x2 + 16 + textWidth(ctx, "Plug key", 12) < w - 4;
+    label(ctx, "Plug key", pkR ? x2 + 16 : x2 - 16, ym, { color: p.soft, size: 12, align: pkR ? "left" : "right" });
     meter(ctx, xm, y2, 17, "A", p);
     if (mode === "current") label(ctx, unitI(on ? I : 0), xm, y2 - 30, { color: p.accent, size: 14, weight: 700, bg: p.surface2 });
     label(ctx, "Ammeter (in series)", xm + 24, y2 + 22, { color: p.soft, size: 12, align: "left" });
@@ -125,10 +127,11 @@ CR.sims.current = function (stage, opt = {}) {
       circle(ctx, xa, y1, 3.5, p.text); circle(ctx, xb, y1, 3.5, p.text);
       meter(ctx, xm, yv, 16, "V", p);
       label(ctx, on ? `${nice(V)} V` : "0 V", xm, yv - 28, { color: p.accent, size: 14, weight: 700, bg: p.surface2 });
-      label(ctx, "Voltmeter (in parallel)", xa - 8, yv, { color: p.soft, size: 12, align: "right" });
+      label(ctx, "Voltmeter (in parallel)", xa - 8, yv, { color: p.soft, size: 12, align: "right", maxW: xa - 14 });
     }
-    label(ctx, show === "e" ? "Electrons move from − to + through the circuit outside the cell" : "Conventional current flows from + to − through the circuit outside the cell",
-      w / 2, H - 10, { color: p.soft, size: 12 });
+    const capL = show === "e" ? "Electrons move from − to + through the circuit outside the cell" : "Conventional current flows from + to − through the circuit outside the cell";
+    const capS = show === "e" ? "Electrons: from − to + outside the cell" : "Current: from + to − outside the cell";
+    label(ctx, textWidth(ctx, capL, 12) < w - 20 ? capL : capS, w / 2, H - 4, { color: p.soft, size: 12, base: "bottom", maxW: w - 20 });
 
     if (!closed) {
       ro([
@@ -221,13 +224,7 @@ CR.sims.symbols = function (stage, opt = {}) {
       fn(ctx, x, y, Math.min(cw * 0.36, 70), p);
       const showName = mode === "learn" || (hl && shown);
       const words = showName ? name : mode === "quiz" && hl ? "?" : "";
-      if (words) {
-        const maxW = cw - 20, size = 12;
-        const parts = []; let cur = "";
-        words.split(" ").forEach(wd => { const tst = cur ? cur + " " + wd : wd; if (textWidth(ctx, tst, size, 700) > maxW && cur) { parts.push(cur); cur = wd; } else cur = tst; });
-        if (cur) parts.push(cur);
-        parts.forEach((t, j) => label(ctx, t, x, r * ch + ch * 0.74 + j * 15, { color: hl ? p.accent : p.text, size, weight: 700 }));
-      }
+      if (words) label(ctx, words, x, r * ch + ch * 0.66, { color: hl ? p.accent : p.text, size: 12, weight: 700, base: "top", maxW: cw - 20 });
     });
     ro(mode === "learn" ? [
       { k: "Table 11.1", v: "Symbols of some commonly used components in circuit diagrams", wide: true },
@@ -320,11 +317,11 @@ CR.sims.ohm = function (stage, opt = {}) {
     if (I > 0) drawFlow(ctx, info, phase, 26, show === "e" ? "e" : "c", show === "e" ? p.r3 : p.r1);
     ctx.fillStyle = p.surface2; ctx.fillRect(xa + 2, y1 - 16, xb - xa - 4, 32);
     circle(ctx, xa, y1, 3.5, wc); circle(ctx, xb, y1, 3.5, wc);
-    label(ctx, "X", xa, y1 - 16, { color: p.soft, size: 12 });
-    label(ctx, "Y", xb, y1 - 16, { color: p.soft, size: 12 });
+    label(ctx, "X", xa - 8, y1 - 10, { color: p.soft, size: 12, align: "right" });
+    label(ctx, "Y", xb + 8, y1 - 10, { color: p.soft, size: 12, align: "left" });
     if (mode === "act1") {
       zigzag(ctx, xa, y1, xb, y1, p.img, 2.5, 9, 8);
-      label(ctx, `Nichrome wire, R = ${fmt(R, 1)} Ω`, cxm, y1 - 26, { color: p.img, size: 13, weight: 700 });
+      label(ctx, `Nichrome wire, R = ${fmt(R, 1)} Ω`, cxm, y1 - 32, { color: p.img, size: 13, weight: 700, maxW: w - 20 });
     } else {
       const c = COMPS.find(x => x.id === comp);
       if (c.id === "nichrome") { ctx.save(); ctx.strokeStyle = p.img; ctx.lineWidth = 2.5; ctx.beginPath(); for (let k = 0; k <= 60; k++) { const t = k / 60, x = lerp(xa, xb, t); const y = y1 + 7 * Math.sin(t * Math.PI * 14); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.restore(); }
@@ -333,7 +330,7 @@ CR.sims.ohm = function (stage, opt = {}) {
         line(ctx, xa, y1, cxm - 14, y1, wc, 2.5); line(ctx, cxm + 14, y1, xb, y1, wc, 2.5);
         bulbGlyph(ctx, cxm, y1, c.id === "torch" ? 13 : 17, closed ? brightness(I * I * c.R * (c.id === "torch" ? 4 : 1)) : 0, p);
       }
-      label(ctx, c.name, cxm, y1 - 30, { color: p.img, size: 13, weight: 700 });
+      label(ctx, c.name, cxm, y1 - 32, { color: p.img, size: 13, weight: 700, maxW: w - 20 });
     }
     plugKey(ctx, x2, ym, closed, p, Math.PI / 2);
     label(ctx, "Key", x2 + 14, ym + 22, { color: p.soft, size: 12, align: "left" });
@@ -346,7 +343,7 @@ CR.sims.ohm = function (stage, opt = {}) {
     }
     meter(ctx, cxm, y2, 17, "A", p);
     label(ctx, `${fmt(I, mode === "act2" && I > 0 && I < 0.1 ? 3 : 2)} A`, cxm, y2 - 30, { color: p.accent, size: 14, weight: 700 });
-    label(ctx, show === "e" ? "Electrons flow from − to + outside the cells" : "Conventional current flows from + to − outside the cells", w / 2, H - 10, { color: p.soft, size: 12 });
+    label(ctx, show === "e" ? "Electrons flow from − to + outside the cells" : "Conventional current flows from + to − outside the cells", w / 2, H - 4, { color: p.soft, size: 12, base: "bottom", maxW: w - 20 });
 
     if (mode === "act1") {
       recBtn.disabled = !closed;
@@ -734,7 +731,10 @@ CR.sims.circuits = function (stage, opt = {}) {
     G.wires.forEach(wv => { const pts = wv.pts.map(fix); for (let j = 1; j < pts.length; j++) line(ctx, pts[j - 1][0], pts[j - 1][1], pts[j][0], pts[j][1], wc, 2.5); });
     G.extra.forEach(([a, b, c, d]) => line(ctx, a, b, c, d, wc, 2.5));
     G.wires.forEach((wv, k) => { if (wv.I > 1e-9) drawFlow(ctx, pathInfo(wv.pts.map(fix)), phases[k] || 0, 30, "c", p.r1); });
-    label(ctx, `${nice(V)} V`, G.bx + 22, G.ym, { color: wc, size: 13, align: "left", weight: 700 });
+    // labels are placed so that none hides another or runs off the canvas
+    const PL = labelPlacer(ctx, w, H);
+    G.meters.forEach(m => PL.block([m.x - m.r - 2, m.y - m.r - 2, m.x + m.r + 2, m.y + m.r + 2]));   // the meters are drawn later
+    PL.put(`${nice(V)} V`, [[G.bx + 22, G.ym], [G.bx + 22, G.ym + 30], [G.bx + 22, G.ym - 30]], { color: wc, size: 13, align: "left", weight: 700 });
     const small = w < 560 ? 11 : 12, rb = clamp(H * 0.055, 12, 20);
     G.elems.forEach(e => {
       const el = s.el[e.k];
@@ -746,12 +746,14 @@ CR.sims.circuits = function (stage, opt = {}) {
         if (el.on) { if (e.h) zigzag(ctx, e.x - e.hw, e.y, e.x + e.hw, e.y, p.img, 2.4, 8, 8); else zigzag(ctx, e.x, e.y - e.hw, e.x, e.y + e.hw, p.img, 2.4, 8, 8); }
         else { label(ctx, "taken out", e.x, e.y, { color: p.warn, size: 11, weight: 700 }); }
       }
-      const txt = `R${e.k + 1} = ${nice(el.R)} Ω`;
-      if (e.h) label(ctx, txt, e.x, e.y + (view === "bulb" ? rb : 10) + 13, { color: p.text, size: small, weight: 700 });
-      else label(ctx, txt, e.x - (view === "bulb" ? rb : 12) - 6, e.y, { color: p.text, size: small, weight: 700, align: "right" });
+      const txt = `R${e.k + 1} = ${nice(el.R)} Ω`, lo = { color: p.text, size: small, weight: 700, bg: p.surface2, pad: 2 };
+      const d = (view === "bulb" ? rb : 10) + 13, dx = (view === "bulb" ? rb : 12) + 6;
+      if (e.h) PL.put(txt, [[e.x, e.y + d], [e.x, e.y - d], [e.x, e.y + d + 14], [e.x, e.y - d - 14]], lo);
+      else PL.put(txt, [[e.x - dx, e.y, { align: "right" }], [e.x + dx, e.y, { align: "left" }], [e.x - dx, e.y + 16, { align: "right" }], [e.x + dx, e.y + 16, { align: "left" }],
+        [e.x - dx, e.y - 16, { align: "right" }], [e.x + dx, e.y - 16, { align: "left" }]], lo);
     });
     if (G.groupLabels && s.groups) {
-      G.groupLabels.forEach(([x, y, t], j) => { const Rg = j ? s.groups.RB : s.groups.RA; label(ctx, `${t} = ${isFinite(Rg) ? nice(Rg, 4) + " Ω" : "open"}`, x, y, { color: p.accent, size: 13, weight: 700, bg: p.surface2 }); });
+      G.groupLabels.forEach(([x, y, t], j) => { const Rg = j ? s.groups.RB : s.groups.RA; PL.put(`${t} = ${isFinite(Rg) ? nice(Rg, 4) + " Ω" : "open"}`, [[x, y], [x, y + 18], [x, y - 18]], { color: p.accent, size: 13, weight: 700, bg: p.surface2 }); });
     }
     plugKey(ctx, G.key.x, G.key.y, true, p, G.key.ang);
     G.meters.forEach(m => {
@@ -759,14 +761,19 @@ CR.sims.circuits = function (stage, opt = {}) {
         line(ctx, m.lead[0], m.lead[1], m.x, m.lead[1], p.soft, 1.6); line(ctx, m.lead[0], m.lead[2], m.x, m.lead[2], p.soft, 1.6);
         line(ctx, m.x, m.lead[1], m.x, m.y - m.r, p.soft, 1.6); line(ctx, m.x, m.y + m.r, m.x, m.lead[2], p.soft, 1.6);
         meter(ctx, m.x, m.y, m.r, "V", p);
-        label(ctx, `${nice(V)} V`, m.x, m.y + m.r + 14, { color: p.accent, size: 13, weight: 700, bg: p.surface2 });
+        PL.block([m.x - m.r, m.y - m.r, m.x + m.r, m.y + m.r]);
+        PL.put(`${nice(V)} V`, [[m.x, m.y + m.r + 14], [m.x, m.y - m.r - 14], [m.x - m.r - 6, m.y + m.r + 4, { align: "right" }]], { color: p.accent, size: 13, weight: 700, bg: p.surface2 });
         return;
       }
       ctx.fillStyle = p.surface2; ctx.fillRect(m.x - m.r - 2, m.y - m.r - 2, 2 * m.r + 4, 2 * m.r + 4);
       meter(ctx, m.x, m.y, m.r, "A", p);
+      PL.block([m.x - m.r, m.y - m.r, m.x + m.r, m.y + m.r]);
       const t = unitI(m.val);
-      if (m.small) label(ctx, t, m.x + m.r + 5, m.y, { color: p.accent, size: small, weight: 700, align: "left", bg: p.surface2 });
-      else label(ctx, t, m.x, m.y + (mode === "series" ? -m.r - 13 : m.r + 14), { color: p.accent, size: 13, weight: 700, bg: p.surface2 });
+      if (m.small) PL.put(t, [[m.x + m.r + 5, m.y, { align: "left" }], [m.x - m.r - 5, m.y, { align: "right" }], [m.x + m.r + 5, m.y - 14, { align: "left" }]], { color: p.accent, size: small, weight: 700, bg: p.surface2 });
+      else {
+        const below = [m.x, m.y + m.r + 14], above = [m.x, m.y - m.r - 13];
+        PL.put(t, mode === "series" ? [above, below] : [below, above, [m.x + m.r + 6, m.y - m.r - 6, { align: "left" }]], { color: p.accent, size: 13, weight: 700, bg: p.surface2 });
+      }
     });
     // series: voltmeter across the chosen part
     if (mode === "series") {
@@ -780,14 +787,14 @@ CR.sims.circuits = function (stage, opt = {}) {
         line(ctx, G.bx, yt, xv, yt, p.soft, 1.6); line(ctx, G.bx, yb, xv, yb, p.soft, 1.6);
         line(ctx, xv, yt, xv, G.ym - 13, p.soft, 1.6); line(ctx, xv, yb, xv, G.ym + 13, p.soft, 1.6);
         meter(ctx, xv, G.ym, 13, "V", p);
-        label(ctx, `${nice(Vread)} V`, xv + 20, G.ym, { color: p.accent, size: 13, weight: 700, align: "left", bg: p.surface2 });
+        PL.put(`${nice(Vread)} V`, [[xv + 20, G.ym, { align: "left" }], [xv, G.ym - 28], [xv, G.ym + 28]], { color: p.accent, size: 13, weight: 700, bg: p.surface2 });
       } else {
         const xm = (xa + xb) / 2;
         line(ctx, xa, G.yT, xa, yv, p.soft, 1.6); line(ctx, xb, G.yT, xb, yv, p.soft, 1.6);
         line(ctx, xa, yv, xm - 14, yv, p.soft, 1.6); line(ctx, xm + 14, yv, xb, yv, p.soft, 1.6);
         circle(ctx, xa, G.yT, 3.2, p.text); circle(ctx, xb, G.yT, 3.2, p.text);
         meter(ctx, xm, yv, 14, "V", p);
-        label(ctx, `${nice(Vread)} V`, xm + 20, yv, { color: p.accent, size: 13, weight: 700, align: "left", bg: p.surface2 });
+        PL.put(`${nice(Vread)} V`, [[xm + 20, yv, { align: "left" }], [xm - 20, yv, { align: "right" }], [xm, yv + 26]], { color: p.accent, size: 13, weight: 700, bg: p.surface2 });
       }
     }
   }
@@ -927,8 +934,8 @@ CR.sims.heating = function (stage, opt = {}) {
     // AC supply
     circle(ctx, x1, ym, 20, p.surface, wc, 2);
     ctx.save(); ctx.strokeStyle = wc; ctx.lineWidth = 2; ctx.beginPath(); for (let k = 0; k <= 20; k++) { const x = x1 - 11 + k * 1.1, y = ym - 7 * Math.sin(k / 20 * Math.PI * 2); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.restore();
-    label(ctx, "220 V", x1 - 26, ym - 8, { color: p.soft, size: 12, align: "right" });
-    label(ctx, "AC", x1 - 26, ym + 8, { color: p.soft, size: 12, align: "right" });
+    label(ctx, "220 V", x1 + 26, ym - 8, { color: p.soft, size: 12, align: "left" });
+    label(ctx, "AC", x1 + 26, ym + 8, { color: p.soft, size: 12, align: "left" });
     line(ctx, x1, ym - 20, x1, yT, p.live, 3); line(ctx, x1, ym + 20, x1, yB, p.neutral, 3);
     const fx = w * 0.36, fw = Math.min(110, w * 0.16);
     line(ctx, x1, yT, fx - fw / 2, yT, p.live, 3); line(ctx, fx + fw / 2, yT, x2, yT, p.live, 3);
@@ -973,9 +980,10 @@ CR.sims.heating = function (stage, opt = {}) {
     for (let k = 0; k <= 60; k++) { const tt = k / 60, x = lerp(cx - r * 0.35, cx + r * 0.35, tt), y = cy - r * 0.05 - 7 * Math.abs(Math.sin(tt * Math.PI * 9)); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
     ctx.stroke(); ctx.restore();
     const lx = cx + r * 1.15;
-    label(ctx, "Tungsten filament (melts at 3380 °C)", lx, cy - r * 0.15, { color: p.text, size: 12, weight: 700, align: "left" });
-    label(ctx, "Filled with nitrogen and argon", lx, cy + r * 0.45, { color: p.text, size: 12, weight: 700, align: "left" });
-    label(ctx, "(chemically inactive gases)", lx, cy + r * 0.45 + 16, { color: p.soft, size: 12, align: "left" });
+    const mw = w - lx - 8;
+    label(ctx, "Tungsten filament (melts at 3380 °C)", lx, cy - r * 0.15, { color: p.text, size: 12, weight: 700, align: "left", maxW: mw });
+    const gb = label(ctx, "Filled with nitrogen and argon", lx, cy + r * 0.38, { color: p.text, size: 12, weight: 700, align: "left", base: "top", maxW: mw });
+    label(ctx, "(chemically inactive gases)", lx, gb[3] - 2, { color: p.soft, size: 12, align: "left", base: "top", maxW: mw });
     label(ctx, `${Vb} V supply, 100 W bulb rated for 220 V`, 10, H - 12, { color: p.soft, size: 11, align: "left" });
     ro([
       { k: "Power used (about)", v: `${nice(Pnow)} W` },
@@ -1079,7 +1087,7 @@ CR.sims.elecPower = function (stage, opt = {}) {
         bulbGlyph(ctx, cx, cy, rb, brightness(P * 30 / Math.max(Pr, 1)), p);
         label(ctx, `Rated ${nice(Vr)} V, ${nice(Pr)} W`, cx, cy + rb + 18, { color: p.text, size: 13, weight: 700 });
         const bx = w * 0.62, bw = w * 0.3, bh = 22, frac = clamp(P / Math.max(Pr, 1e-9), 0, 1.5) / 1.5;
-        label(ctx, "Power used compared with the rating", bx, cy - 40, { color: p.soft, size: 12, align: "left" });
+        label(ctx, "Power used compared with the rating", bx, cy - 30, { color: p.soft, size: 12, align: "left", base: "bottom", maxW: w - bx - 6 });
         ctx.fillStyle = p.surface; roundRect(ctx, bx, cy - 22, bw, bh, 6); ctx.fill(); ctx.strokeStyle = p.border; ctx.stroke();
         ctx.fillStyle = P > Pr * 1.001 ? p.warn : p.accent; roundRect(ctx, bx, cy - 22, Math.max(2, bw * frac), bh, 6); ctx.fill();
         line(ctx, bx + bw / 1.5, cy - 30, bx + bw / 1.5, cy + 8, p.text, 1.5, [3, 3]);
@@ -1103,7 +1111,9 @@ CR.sims.elecPower = function (stage, opt = {}) {
         [[`A: ${nice(aP)} W for ${nice(aT)} min`, EA, y1, p.r1], [`B: ${nice(bP)} W for ${nice(bT)} min`, EB, y2, p.r3]].forEach(([t, E, y, c]) => {
           label(ctx, t, bx, y - bh / 2 - 12, { color: p.text, size: 12, weight: 700, align: "left" });
           ctx.fillStyle = c; roundRect(ctx, bx, y - bh / 2, Math.max(3, bw * E / mx), bh, 6); ctx.fill();
-          label(ctx, `${sci(E, 2)} J`, bx + Math.max(3, bw * E / mx) + 8, y, { color: p.text, size: 13, weight: 700, align: "left" });
+          const et = `${sci(E, 2)} J`, xe = bx + Math.max(3, bw * E / mx);
+          if (xe + 8 + textWidth(ctx, et, 13, 700) < w - 4) label(ctx, et, xe + 8, y, { color: p.text, size: 13, weight: 700, align: "left" });
+          else label(ctx, et, xe - 8, y, { color: "#fff", size: 13, weight: 700, align: "right" });
         });
         label(ctx, EA === EB ? "Both use the same energy" : EA > EB ? "A uses more energy" : "B uses more energy", bx, H * 0.88, { color: p.accent, size: 13, weight: 700, align: "left" });
       }

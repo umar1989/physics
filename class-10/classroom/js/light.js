@@ -3,7 +3,7 @@
    ============================================================ */
 "use strict";
 (function () {
-const { h, clamp, lerp, DEG, fmt, sgnf, nice, br, pal, line, head, drawRay, vArrow, label, textWidth, roundRect, circle,
+const { h, clamp, lerp, DEG, fmt, sgnf, nice, br, pal, line, head, drawRay, vArrow, label, labelPlacer, textWidth, roundRect, circle,
   arcAngle, toEdge, hatch, makeCanvas, controls, slider, seg, select, numInput, chipRow, chip, toggles, readouts, ncertTable } = CR;
 
 /* ---------- NCERT tables (wording as in the textbook) ---------- */
@@ -107,14 +107,14 @@ CR.sims.reflection = function (stage, opt = {}) {
       const s = (mxp - 46) / 42;                    // px per cm
       line(ctx, mxp, top, mxp, bot, p.glassEdge, 4);
       hatch(ctx, mxp, top, mxp, bot, p.soft, -1);
-      label(ctx, "Plane mirror", mxp + 12, top + 6, { color: p.soft, size: 12, align: "left" });
+      const PL = labelPlacer(ctx, w, H);   // labels are placed so that none hides another
+      PL.put("Plane mirror", [[mxp + 12, top + 6, { align: "left" }]], { color: p.soft, size: 12 });
       const ho = Math.min(H * 0.26, 80);
       const xo = mxp - d * s, xi = mxp + d * s, ty = base - ho;
       line(ctx, 0, base, w, base, p.border, 1);
       vArrow(ctx, xo, base, ty, p.obj, { width: 4 });
-      label(ctx, "Object", xo, ty - 12, { color: p.obj, size: 13 });
       vArrow(ctx, xi, base, ty, p.img, { width: 4, dash: [6, 4] });
-      label(ctx, "Image (virtual)", Math.min(xi, w - 50), ty - 12, { color: p.img, size: 13 });
+      const tOb = { color: p.obj, size: 13 }, tIm = { color: p.img, size: 13 };
       // two rays from the tip of the object, reflected at the mirror, seen by the eye
       const eye = [26, H * 0.86];
       const hit1 = ty + (eye[1] - ty) * (mxp - xi) / (eye[0] - xi);   // line eye–image tip meets the mirror
@@ -130,7 +130,7 @@ CR.sims.reflection = function (stage, opt = {}) {
       const drawEye = (ex, ey, txt, below) => {
         ctx.save(); ctx.translate(ex, ey); ctx.strokeStyle = p.text; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.ellipse(0, 0, 11, 6, 0, 0, Math.PI * 2); ctx.stroke(); circle(ctx, 3, 0, 3, p.text); ctx.restore();
-        label(ctx, txt, ex - 6, ey + (below ? 17 : -15), { color: p.soft, size: 12, align: "left" });
+        PL.put(txt, [[ex - 6, ey + (below ? 17 : -15), { align: "left" }], [ex - 6, ey + (below ? -15 : 17), { align: "left" }]], { color: p.soft, size: 12 });
       };
       drawEye(eye[0], eye[1], "Eye", true);
       drawEye(eye[0], eye2y, "Eye at another place", false);
@@ -138,16 +138,23 @@ CR.sims.reflection = function (stage, opt = {}) {
       const dy = base + 22;
       line(ctx, xo, dy, mxp, dy, p.soft, 1.2); line(ctx, mxp, dy, xi, dy, p.soft, 1.2);
       head(ctx, xo, dy, Math.PI, 7, p.soft); head(ctx, mxp, dy, 0, 7, p.soft); head(ctx, mxp, dy, Math.PI, 7, p.soft); head(ctx, xi, dy, 0, 7, p.soft);
-      label(ctx, `${d} cm`, (xo + mxp) / 2, dy + 13, { color: p.text, size: 12 });
-      label(ctx, `${d} cm`, (xi + mxp) / 2, dy + 13, { color: p.text, size: 12 });
       // lateral inversion
       const fs = Math.min(36, w * 0.05);
-      label(ctx, "Object", 18, top + 6, { color: p.soft, size: 12, align: "left" });
-      label(ctx, word, 18, top + 30, { color: p.text, size: fs, weight: 700, align: "left" });
+      const capO = CR.labelBox(ctx, "Object", 18, top, { size: 12, align: "left", base: "top" }), yw = capO[3] + 2;
+      PL.put("Object", [[18, top, { align: "left", base: "top" }]], { color: p.soft, size: 12 });
+      PL.put(word, [[18, yw, { align: "left", base: "top" }]], { color: p.text, size: fs, weight: 700 });
+      const wb = CR.labelBox(ctx, word, 0, yw, { size: fs, weight: 700, align: "left", base: "top" });
       ctx.save(); ctx.translate(w - 18, 0); ctx.scale(-1, 1);
-      label(ctx, word, 0, top + 30, { color: p.img, size: fs, weight: 700, align: "left" });
+      label(ctx, word, 0, yw, { color: p.img, size: fs, weight: 700, align: "left", base: "top" });
       ctx.restore();
-      label(ctx, "Its image", w - 18, top + 6, { color: p.soft, size: 12, align: "right" });
+      PL.block([w - 18 - wb[2], wb[1], w - 18 - wb[0], wb[3]]);
+      PL.put("Its image", [[w - 18, top, { align: "right", base: "top" }]], { color: p.soft, size: 12 });
+      // the object and its image, then the distances
+      PL.put("Object", [[xo, ty - 12], [xo - 8, ty - 12, { align: "right" }], [xo - 8, ty + 10, { align: "right" }]], tOb);
+      const hwI = textWidth(ctx, "Image (virtual)", 13) / 2 + 6;
+      PL.put("Image (virtual)", [[clamp(xi, hwI, w - hwI), ty - 12], [xi + 8, ty - 12, { align: "left" }], [xi + 8, ty + 10, { align: "left" }], [xi + 8, ty - 28, { align: "left" }], [xi - 8, ty - 28, { align: "right" }]], tIm);
+      PL.put(`${d} cm`, [[(xo + mxp) / 2, dy + 13], [xo - 6, dy, { align: "right" }], [(xo + mxp) / 2, dy - 12]], { color: p.text, size: 12 });
+      PL.put(`${d} cm`, [[(xi + mxp) / 2, dy + 13], [xi + 6, dy, { align: "left" }], [(xi + mxp) / 2, dy - 12]], { color: p.text, size: 12 });
       ro([
         { k: "Object distance u", v: `${fmt(-d, 0)} cm` },
         { k: "Image distance v", v: `+${d} cm (behind the mirror)` },
@@ -188,8 +195,8 @@ CR.sims.optics = function (stage, opt = {}) {
     label: isMirror ? "Mirror" : "Lens", value: type,
     options: isMirror ? [["concave", "Concave"], ["convex", "Convex"]] : [["convex", "Convex"], ["concave", "Concave"]]
   }, v => { type = v; onType(); draw(); });
-  const sF = slider(ctl, { label: "Focal length |f|", min: 5, max: 30, step: 0.5, value: F, unit: "cm", fmt: v => fmt(v, 1) }, v => { F = v; draw(); });
-  const sU = slider(ctl, { label: "Object distance |u|", min: 2, max: 100, step: 0.5, value: U, unit: "cm", fmt: v => fmt(v, 1) }, v => { U = v; inf = false; draw(); });
+  const sF = slider(ctl, { label: "Focal length |f|", min: 5, max: 30, step: 0.5, value: F, unit: "cm", fmt: v => fmt(v, 1) }, v => { F = v; if (!inf) { U = fitU(U); syncU(); } draw(); });
+  const sU = slider(ctl, { label: "Object distance |u|", min: 2, max: 100, step: 0.5, value: U, unit: "cm", fmt: v => fmt(v, 1) }, v => { U = fitU(v); inf = false; if (U !== v) syncU(); draw(); });
   const nH = numInput(ctl, { label: "Object height h", value: hObj, min: 0.1, max: 50, step: 0.1, unit: "cm" }, v => { hObj = v; draw(); });
   const pre = chipRow(stage);
   const showRow = chipRow(stage, "Show");
@@ -206,6 +213,16 @@ CR.sims.optics = function (stage, opt = {}) {
   let tbl = null, tblType = null, last = null;
 
   const converging = () => (isMirror ? type === "concave" : type === "convex");
+  /* Just next to F the image of a converging mirror or lens is so far away (more than 12 focal
+     lengths) that it cannot be drawn on the screen. Object positions in that narrow band are
+     skipped, so the image is always visible; at F itself the image is at infinity. */
+  function fitU(u) {
+    if (!converging() || u === F) return u;
+    const lo = Math.floor((12 * F / 13) / 0.5 + 1e-9) * 0.5, hi = Math.ceil((12 * F / 11) / 0.5 - 1e-9) * 0.5;
+    if (u <= lo || u >= hi) return u;
+    const opts = [lo, F, hi];
+    return opts.reduce((a, b) => (Math.abs(b - u) < Math.abs(a - u) ? b : a));
+  }
   const table = () => (isMirror ? (type === "concave" ? T91 : T92) : (type === "convex" ? T94 : T95));
   function region() {
     if (inf) return 0;
@@ -219,6 +236,7 @@ CR.sims.optics = function (stage, opt = {}) {
   }
   function onType() {
     const conv = converging();
+    if (!inf) { U = fitU(U); syncU(); }
     rayT.btns.r2.textContent = isMirror ? (conv ? "Ray 2: through F" : "Ray 2: towards F") : (conv ? "Ray 2: through F₁" : "Ray 2: towards F₂");
     if (isMirror) rayT.btns.r3.textContent = conv ? "Ray 3: through C" : "Ray 3: towards C";
     buildPresets();
@@ -294,18 +312,61 @@ CR.sims.optics = function (stage, opt = {}) {
     const mL = 34, mR = 34;
     const sx = (W - mL - mR) / (left + right);
     const x0 = mL + left * sx;
-    const ay = Math.round(H * 0.5);
-    const E = H * 0.41;                                   // half-height of the mirror / lens
-    let ho = Math.min(H * 0.22, 66);
-    if (imgShown) ho = Math.min(ho, (E * 0.92) / Math.max(1, Math.abs(st.m)));
-    if (isMirror && !inf) {
-      // keep the ray through C on the mirror, unless that would make the object too small
-      const xC = 2 * st.f, k3 = Math.abs(xC / (xC - st.u));
-      const h3 = (E * 0.95) / k3;
-      if (h3 >= Math.max(22, H * 0.065)) ho = Math.min(ho, h3);
-    }
-    ho = Math.max(ho, 9);
     const X = cm => x0 + cm * sx;
+
+    /* ---- legend: the rays listed at the foot of the canvas (drawn last) ---- */
+    const rayNames = isMirror
+      ? { r1: "Parallel to axis", r2: conv ? "Through F" : "Towards F", r3: conv ? "Through C" : "Towards C", r4: "To the pole P" }
+      : { r1: "Parallel to axis", r2: conv ? "Through F₁" : "Towards F₂", r3: "Through O" };
+    const legendRows = items => {
+      const rows = [];
+      items.forEach(t => {
+        const wI = 23 + textWidth(ctx, t, small) + 14, r = rows[rows.length - 1];
+        if (r && r.w + wI <= W - 12) { r.t.push(t); r.w += wI; } else rows.push({ t: [t], w: wI - 2 });
+      });
+      return rows;
+    };
+    const expect = inf ? ["Rays parallel to the principal axis"]
+      : [...Object.keys(rayNames).filter(k => rays[k]).map(k => rayNames[k]), ...(!isMirror && show.cover ? ["Rays through the lower half"] : [])];
+    const legBot = Math.max(0, legendRows(expect).length - 1) * 23;   // room for a second row of the legend
+
+    /* ---- vertical layout (top = height kept free at the top for the sign-convention box) ---- */
+    function vert(top) {
+      const Hh = H - top - legBot, ay = Math.round(top + Hh * 0.5), E = Hh * 0.41;   // E: half-height of the mirror / lens
+      let ho = Math.min(Hh * 0.22, 66);
+      if (imgShown) ho = Math.min(ho, (E * 0.92) / Math.max(1, Math.abs(st.m)));
+      if (isMirror && !inf) {
+        // keep the ray through C on the mirror, unless that would make the object too small
+        const xC = 2 * st.f, k3 = Math.abs(xC / (xC - st.u));
+        const h3 = (E * 0.95) / k3;
+        if (h3 >= Math.max(22, Hh * 0.065)) ho = Math.min(ho, h3);
+      }
+      return { ay, E, ho: Math.max(ho, 9) };
+    }
+    let { ay, E, ho } = vert(0);
+    // Sign convention box (NCERT Fig. 9.9): it goes in a corner where it hides neither the object,
+    // the image nor the mirror / lens; if there is no such corner, the diagram moves down below it.
+    const SB = show.sign ? (W < 640 ? { w: 158, h: 100, k: 0.72 } : { w: 214, h: 118, k: 1 }) : null;
+    let sbx = 8, sby = 8;
+    if (SB) {
+      const keep = [[x0 - 20, ay - E - 6, x0 + 20, ay + E + 6]];
+      if (inf) keep.push([X(st.f) - 50, ay - 30, X(st.f) + 50, ay + 26]);
+      else {
+        const xo = X(st.u), yo = ay - ho;
+        keep.push([xo - 34, yo - 24, xo + 34, ay + 22]);
+        keep.push([Math.min(xo, x0), ay + E * 0.78 - 22, Math.max(xo, x0), ay + E * 0.78 + 4]);
+        if (!st.atInf) {
+          const xi = X(st.v), yi = ay - st.m * ho;
+          keep.push([xi - 34, Math.min(yi, ay) - 24, xi + 34, Math.max(yi, ay) + 24]);
+          keep.push([Math.min(xi, x0), ay + E * 0.94 - 22, Math.max(xi, x0), ay + E * 0.94 + 4]);
+        }
+      }
+      const hit = bx => keep.some(k => bx[0] < k[2] && k[0] < bx[2] && bx[1] < k[3] && k[1] < bx[3]);
+      const corners = [[8, 8], [W - SB.w - 8, 8], [8, H - SB.h - 34 - legBot], [W - SB.w - 8, H - SB.h - 34 - legBot]];
+      const free = corners.find(([x, y]) => !hit([x, y, x + SB.w, y + SB.h]));
+      if (free) [sbx, sby] = free;
+      else ({ ay, E, ho } = vert(SB.h + 12));
+    }
 
     /* ---- the mirror or lens ---- */
     const sag = isMirror ? Math.min(12, E * 0.07) : 0;
@@ -340,7 +401,6 @@ CR.sims.optics = function (stage, opt = {}) {
       if (show.cover) {
         ctx.save(); ctx.fillStyle = p.dark ? "#05070b" : "#1b1f2a"; ctx.globalAlpha = 0.92;
         roundRect(ctx, x0 - 17, ay - E - 4, 34, E + 4, 4); ctx.fill(); ctx.restore();
-        label(ctx, "Black paper", x0 + 22, ay - E * 0.75, { color: p.soft, size: small, align: "left" });
       }
     }
 
@@ -348,17 +408,15 @@ CR.sims.optics = function (stage, opt = {}) {
     const pts = isMirror
       ? [[X(st.f), "F"], [X(2 * st.f), "C"]]
       : [[X(-F), "F₁"], [X(-2 * F), "2F₁"], [X(F), "F₂"], [X(2 * F), "2F₂"]];
-    for (const [x, t] of pts) if (x > 6 && x < W - 6) { line(ctx, x, ay - 5, x, ay + 5, p.text, 2); label(ctx, t, x, ay + 17, { color: p.text, size: 13 }); }
-    label(ctx, isMirror ? "P" : "O", x0 + (isMirror ? 12 : 13), ay + 17, { color: p.text, size: 13 });
+    for (const [x] of pts) if (x > 6 && x < W - 6) line(ctx, x, ay - 5, x, ay + 5, p.text, 2);
 
     /* ---- rays ---- */
-    const drawn = [];
+    const drawn = [], skipped = [];
     const Fout = isMirror ? X(st.f) : X(conv ? F : -F);   // focus related to the parallel ray after reflection / refraction
     const Fin = isMirror ? X(st.f) : X(conv ? -F : F);    // focus related to ray 2 before the element
     const Cx = X(2 * st.f);
     const back = isMirror ? -1 : 1;
     const blocked = y => !isMirror && show.cover && y < ay - 0.5;
-    const labelIn = (t, x, y, o) => { const hw = textWidth(ctx, t, o.size, o.weight || 600) / 2 + 6; label(ctx, t, clamp(x, hw, W - hw), y, o); };
     const edgeX0 = 0, edgeX1 = W;
 
     // point where a line from (xa,ya) with slope k meets the mirror surface (or the lens plane)
@@ -370,7 +428,7 @@ CR.sims.optics = function (stage, opt = {}) {
     let xo = 0, yo = 0, xi = 0, yi = 0;
     if (inf) {
       const hs = [-0.62, -0.3, 0.3, 0.62].map(k => ay + k * E);
-      const imgX = isMirror ? X(st.f) : X(st.f);
+      const imgX = X(st.f);
       hs.forEach(y => {
         const xh = x0 + surf(y);
         if (blocked(y)) { drawRay(ctx, edgeX0, y, xh - 16, y, p.r1, { width: 2 }); return; }
@@ -383,8 +441,6 @@ CR.sims.optics = function (stage, opt = {}) {
         if (!conv) line(ctx, xh, y, imgX, ay, p.r1, 1.5, [5, 5], 0.85);
       });
       circle(ctx, imgX, ay, 5.5, p.img, p.surface, 1.5);
-      labelIn("Image (point-sized)", imgX, ay - 16, { color: p.img, size: 13, bg: p.surface2 });
-      label(ctx, "Parallel rays from an object at infinity", 10, 14, { color: p.soft, size: small, align: "left" });
       drawn.push([p.r1, "Rays parallel to the principal axis"]);
     } else {
       xo = X(st.u); yo = ay - ho;
@@ -393,10 +449,8 @@ CR.sims.optics = function (stage, opt = {}) {
         if (st.atInf) return rule;
         return st.real ? [xi - xh, yi - yh] : [xh - xi, yh - yi];
       };
-      const names = isMirror
-        ? { r1: "Parallel to axis", r2: conv ? "Through F" : "Towards F", r3: conv ? "Through C" : "Towards C", r4: "To the pole P" }
-        : { r1: "Parallel to axis", r2: conv ? "Through F₁" : "Towards F₂", r3: "Through O" };
-      const list = [], skipped = [];
+      const names = rayNames;
+      const list = [];
       const edgeNote = isMirror ? "it would meet the mirror beyond its edge" : "it would meet the lens beyond its edge";
       // Ray 1: parallel to the principal axis
       if (rays.r1) {
@@ -465,108 +519,178 @@ CR.sims.optics = function (stage, opt = {}) {
       }
       list.forEach(r => drawn.push([r.c, names[r.name]]));
       if (!isMirror && show.cover) drawn.push([p.beam, "Rays through the lower half"]);
-      skipped.forEach((t, j) => label(ctx, t, 10, (show.sign ? 140 : 14) + j * 20, { color: p.soft, size: small, align: "left", bg: p.surface2 }));
 
-      // object
+      // object and image
       vArrow(ctx, xo, ay, yo, p.obj, { width: 3.5 });
-      labelIn("Object", xo, yo - 12, { color: p.obj, size: 13 });
-      // image
-      if (st.atInf) {
-        label(ctx, "Image at infinity (rays come out parallel)", W - 10, ay + (H / 2) * 0.82, { color: p.img, size: 13, align: "right", bg: p.surface2 });
-      } else {
+      if (!st.atInf && xi > 2 && xi < W - 2) {
         const alpha = !isMirror && show.cover ? 0.55 : 1;
-        if (xi > 2 && xi < W - 2) {
-          const yClip = clamp(yi, 4, H - 4);
-          vArrow(ctx, xi, ay, yClip, p.img, { width: 3.5, dash: st.real ? null : [6, 4], alpha });
-          const ly = clamp(st.m > 0 ? yClip - 12 : yClip + 14, 10, H - 10);
-          labelIn(st.real ? "Image" : "Image (virtual)", xi, ly, { color: p.img, size: 13, bg: p.surface2 });
-        } else {
-          const atLeft = xi <= 2;
-          const where = `Image is ${fmt(Math.abs(st.v), 1)} cm from ${isMirror ? "P" : "O"}`, fF = isMirror ? "F" : "F₁";
-          const msg = W < 760 ? [`${where}, off the screen`, `Move the object away from ${fF} to see it`]
-            : [`${where}, too far to fit. Move the object away from ${fF} to bring it back.`];
-          msg.forEach((t, j) => label(ctx, j === 0 ? (atLeft ? "← " : "") + t + (atLeft ? "" : " →") : t, atLeft ? 10 : W - 10, H - 36 - (msg.length - 1 - j) * 19,
-            { color: p.img, size: W < 560 ? 11 : 13, weight: 700, align: atLeft ? "left" : "right", bg: p.surface2 }));
-        }
+        vArrow(ctx, xi, ay, clamp(yi, 4, H - 4), p.img, { width: 3.5, dash: st.real ? null : [6, 4], alpha });
       }
     }
 
-    /* ---- names of points ---- */
+    /* ---- dimension lines for the names of points and for the sign convention ---- */
+    const lc = p.accent;
+    const dim = (xa, xb, y, both = true) => {
+      line(ctx, xa, y, xb, y, lc, 1.3);
+      head(ctx, xb, y, xb < xa ? Math.PI : 0, 7, lc);
+      if (both) head(ctx, xa, y, xa < xb ? Math.PI : 0, 7, lc);
+    };
+    const Fx = isMirror ? X(st.f) : X(F), Cc = X(2 * st.f), F1x = X(-F);
+    const ydF = ay + Math.min(52, E * 0.42), ydR = ay + Math.min(70, E * 0.58), axA = x0 + (isMirror ? 26 : 24);
     if (show.labels) {
-      const lc = p.accent;
-      if (isMirror) {
-        label(ctx, "Pole (P)", x0 + 8, ay - 12, { color: lc, size: small, align: "left", weight: 700, bg: p.surface2 });
-        const Fx = X(st.f), Cc = X(2 * st.f);
-        if (Fx > 6 && Fx < W - 6) label(ctx, "Principal focus (F)", Fx, ay + 34, { color: lc, size: small, weight: 700, bg: p.surface2 });
-        if (Cc > 6 && Cc < W - 6) label(ctx, "Centre of curvature (C)", Cc, ay - 14, { color: lc, size: small, weight: 700, bg: p.surface2 });
-        label(ctx, "Principal axis", 8, ay - 10, { color: lc, size: small, align: "left", weight: 700 });
-        const yd = ay + 52, yd2 = ay + 70;
-        if (Fx > 6 && Fx < W - 6) { line(ctx, Fx, yd, x0, yd, lc, 1.3); head(ctx, Fx, yd, Fx < x0 ? Math.PI : 0, 7, lc); head(ctx, x0, yd, Fx < x0 ? 0 : Math.PI, 7, lc); label(ctx, "focal length f", (Fx + x0) / 2, yd - 9, { color: lc, size: small }); }
-        if (Cc > 6 && Cc < W - 6) { line(ctx, Cc, yd2, x0, yd2, lc, 1.3); head(ctx, Cc, yd2, Cc < x0 ? Math.PI : 0, 7, lc); head(ctx, x0, yd2, Cc < x0 ? 0 : Math.PI, 7, lc); label(ctx, "radius of curvature R = 2f", (Cc + x0) / 2, yd2 + 11, { color: lc, size: small }); }
-        const ax = x0 + 26;
-        line(ctx, ax, ay - E, ax, ay + E, lc, 1.3); head(ctx, ax, ay - E, -Math.PI / 2, 7, lc); head(ctx, ax, ay + E, Math.PI / 2, 7, lc);
-        label(ctx, "aperture", ax + 6, ay - E * 0.6, { color: lc, size: small, align: "left" });
-      } else {
-        label(ctx, "Optical centre (O)", x0 + 8, ay - 12, { color: lc, size: small, align: "left", weight: 700, bg: p.surface2 });
-        label(ctx, "Principal axis", 8, ay - 10, { color: lc, size: small, align: "left", weight: 700 });
-        const F2x = X(F), F1x = X(-F), yd = ay + 52;
-        label(ctx, "Principal focus", F1x, ay + 34, { color: lc, size: small, weight: 700, bg: p.surface2 });
-        label(ctx, "Principal focus", F2x, ay + 34, { color: lc, size: small, weight: 700, bg: p.surface2 });
-        line(ctx, x0, yd, F2x, yd, lc, 1.3); head(ctx, F2x, yd, 0, 7, lc); head(ctx, x0, yd, Math.PI, 7, lc);
-        label(ctx, "focal length f", (x0 + F2x) / 2, yd + 11, { color: lc, size: small });
-        const ax = x0 + 24;
-        line(ctx, ax, ay - E, ax, ay + E, lc, 1.3); head(ctx, ax, ay - E, -Math.PI / 2, 7, lc); head(ctx, ax, ay + E, Math.PI / 2, 7, lc);
-        label(ctx, "aperture", ax + 6, ay - E * 0.6, { color: lc, size: small, align: "left" });
-      }
+      if (Fx > 6 && Fx < W - 6) dim(x0, Fx, ydF);
+      if (isMirror && Cc > 6 && Cc < W - 6) dim(x0, Cc, ydR);
+      line(ctx, axA, ay - E, axA, ay + E, lc, 1.3); head(ctx, axA, ay - E, -Math.PI / 2, 7, lc); head(ctx, axA, ay + E, Math.PI / 2, 7, lc);
     }
+    const ydU = ay + E * 0.78, ydV = ay + E * 0.94;
+    const showV = show.sign && !inf && !st.atInf && xi > 2 && xi < W - 2;
+    if (show.sign && !inf) dim(x0, xo, ydU, false);
+    if (showV) dim(x0, xi, ydV, false);
 
-    /* ---- sign convention (as in NCERT Fig. 9.9) ---- */
-    if (show.sign) {
-      const c = p.accent, org = isMirror ? "P" : "O";
-      const bw = 214, bh = 118, bx = 8, by = 8, cxo = bx + bw / 2, cyo = by + 58, L = 62;
-      ctx.save(); ctx.globalAlpha = 0.94; roundRect(ctx, bx, by, bw, bh, 8); ctx.fillStyle = p.surface2; ctx.fill(); ctx.restore();
+    /* ---- sign convention box (as in NCERT Fig. 9.9) ---- */
+    if (SB) {
+      const c = p.accent, org = isMirror ? "P" : "O", k = SB.k, fs = W < 640 ? 10 : 11;
+      const bw = SB.w, bh = SB.h, bx = sbx, by = sby, cxo = bx + bw / 2, cyo = by + bh * 0.49, L = 62 * k, Ly = 38 * k;
+      ctx.save(); ctx.globalAlpha = 0.95; roundRect(ctx, bx, by, bw, bh, 8); ctx.fillStyle = p.surface2; ctx.fill(); ctx.restore();
       ctx.save(); roundRect(ctx, bx, by, bw, bh, 8); ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
       line(ctx, cxo - L, cyo, cxo + L, cyo, c, 2); head(ctx, cxo + L + 2, cyo, 0, 9, c); head(ctx, cxo - L - 2, cyo, Math.PI, 9, c);
-      line(ctx, cxo, cyo - 38, cxo, cyo + 38, c, 2); head(ctx, cxo, cyo - 40, -Math.PI / 2, 9, c); head(ctx, cxo, cyo + 40, Math.PI / 2, 9, c);
+      line(ctx, cxo, cyo - Ly, cxo, cyo + Ly, c, 2); head(ctx, cxo, cyo - Ly - 2, -Math.PI / 2, 9, c); head(ctx, cxo, cyo + Ly + 2, Math.PI / 2, 9, c);
       circle(ctx, cxo, cyo, 3.5, c);
-      label(ctx, `${org} (origin)`, cxo + 6, cyo + 11, { color: c, size: 11, align: "left", weight: 700 });
-      label(ctx, "+ right", cxo + L - 4, cyo - 11, { color: c, size: 11, align: "center", weight: 700 });
-      label(ctx, "− left", cxo - L + 4, cyo - 11, { color: c, size: 11, align: "center", weight: 700 });
-      label(ctx, "+ up", cxo + 8, cyo - 32, { color: c, size: 11, align: "left", weight: 700 });
-      label(ctx, "− down", cxo + 8, cyo + 32, { color: c, size: 11, align: "left", weight: 700 });
-      label(ctx, `Distances from ${org}`, cxo, by + 12, { color: c, size: 11, weight: 700 });
-      label(ctx, "Incident light: left to right →", cxo, by + bh - 10, { color: c, size: 11, weight: 700 });
-      if (!inf) {
-        const yd = ay + E * 0.78;
-        line(ctx, xo, yd, x0, yd, c, 1.3); head(ctx, xo, yd, Math.PI, 7, c);
-        label(ctx, `u = ${fmt(st.u, 1)} cm`, (xo + x0) / 2, yd - 10, { color: c, size: small, weight: 700, bg: p.surface2 });
-        const t1 = `h = +${fmt(hObj, 1)} cm`, leftOk = xo - 8 - textWidth(ctx, t1, small, 700) - 8 > 0;
-        label(ctx, t1, leftOk ? xo - 8 : xo + 8, (ay + yo) / 2, { color: c, size: small, weight: 700, align: leftOk ? "right" : "left", bg: p.surface2 });
-        if (!st.atInf && xi > 2 && xi < W - 2) {
-          const yd2 = ay + E * 0.94;
-          line(ctx, x0, yd2, xi, yd2, c, 1.3); head(ctx, xi, yd2, xi < x0 ? Math.PI : 0, 7, c);
-          label(ctx, `v = ${sgnf(st.v, 1)} cm`, (xi + x0) / 2, yd2 - 10, { color: c, size: small, weight: 700, bg: p.surface2 });
-          const t2 = `h′ = ${sgnf(st.m * hObj, 2)} cm`, tw2 = textWidth(ctx, t2, small, 700) + 12;
-          const right = xi + 8 + tw2 < W;
-          label(ctx, t2, right ? xi + 8 : xi - 8, (ay + clamp(yi, 4, H - 4)) / 2, { color: c, size: small, weight: 700, align: right ? "left" : "right", bg: p.surface2 });
-        }
-      }
+      const o = { color: c, size: fs, weight: 700 };
+      label(ctx, `${org} (origin)`, cxo + 6, cyo + 10, { ...o, align: "left" });
+      label(ctx, "+ right", cxo + L - 2, cyo - 10, { ...o, align: "center" });
+      label(ctx, "− left", cxo - L + 2, cyo - 10, { ...o, align: "center" });
+      label(ctx, "+ up", cxo + 7, cyo - Ly + 6, { ...o, align: "left" });
+      label(ctx, "− down", cxo + 7, cyo + Ly - 6, { ...o, align: "left" });
+      label(ctx, `Distances from ${org}`, cxo, by + 4, { ...o, base: "top" });
+      label(ctx, "Incident light: left to right →", cxo, by + bh - 4, { ...o, base: "bottom", maxW: bw - 10 });
     }
 
-    /* ---- headline: NCERT table row ---- */
-    const headline = `Image: ${row[1]} · ${row[2]} · ${row[3]}`;
-    if (W >= 700) label(ctx, headline, W - 10, 14, { color: st.real ? p.r1 : p.r3, size: 13, align: "right", weight: 700, bg: p.surface2 });
-    // legend
-    if (drawn.length) {
-      const widths = drawn.map(([, t]) => textWidth(ctx, t, small));
-      const total = widths.reduce((a, b) => a + b + 37, 0) - 14 + 12;
-      const ly0 = H - 13;
-      if (total < W - 8) {
-        roundRect(ctx, 4, ly0 - 10, total, 20, 6); ctx.fillStyle = p.surface2; ctx.fill();
-        let lx = 10;
-        drawn.forEach(([c, t], j) => { line(ctx, lx, ly0, lx + 18, ly0, c, 3); label(ctx, t, lx + 23, ly0, { color: p.soft, size: small, align: "left" }); lx += 23 + widths[j] + 14; });
+    /* ---- legend (drawn last; its place is kept free of labels) ---- */
+    const legW = drawn.map(([, t]) => 23 + textWidth(ctx, t, small) + 14);
+    const legRows = [];
+    drawn.forEach((d, j) => {
+      const r = legRows[legRows.length - 1];
+      if (r && r.w + legW[j] <= W - 12) { r.items.push([d, legW[j]]); r.w += legW[j]; }
+      else legRows.push({ items: [[d, legW[j]]], w: legW[j] - 2 });
+    });
+    legRows.forEach((r, k) => { r.y = H - 13 - (legRows.length - 1 - k) * 23; });
+
+    /* ---- labels, placed in order of importance so that none hides another ---- */
+    const PL = labelPlacer(ctx, W, H);
+    legRows.forEach(r => PL.block([4, r.y - 10, 4 + r.w, r.y + 10]));
+    if (SB) PL.block([sbx, sby, sbx + SB.w, sby + SB.h]);
+    const inW = (t, x, o) => { const hw = textWidth(ctx, t.split("\n")[0], o.size || 13, o.weight || 600) / 2 + 6; return clamp(x, hw, W - hw); };
+    // candidate places near a point: centred above / below it, then to either side
+    const near = (t, x, y, o, dys) => [...dys.map(dy => [inW(t, x, o), y + dy]),
+      ...dys.flatMap(dy => [[x + 8, y + dy, { align: "left" }], [x - 8, y + dy, { align: "right" }]])];
+    // candidate places along a horizontal dimension line from xa to xb at height y
+    const along = (xa, xb, y, dys) => [0.5, 0.3, 0.7, 0.15, 0.85].flatMap(t => dys.map(dy => [lerp(xa, xb, t), y + dy]));
+    const axisO = { color: p.text, size: 13 };
+    PL.put(isMirror ? "P" : "O", [[x0 + (isMirror ? 12 : 13), ay + 17], [x0 + 12, ay - 15], [x0 - 12, ay + 17]], axisO);
+    // when the points are crowded (a far object), a letter may go above the axis or a little lower
+    for (const [x, t] of pts) if (x > 6 && x < W - 6) PL.put(t, [[x, ay + 17], [x, ay - 15], [x, ay + 33]], axisO);
+    // object and image
+    if (inf) {
+      const t = "Image (point-sized)", o = { color: p.img, size: 13, bg: p.surface2 }, ix = X(st.f);
+      PL.put(t, [[inW(t, ix, o), ay - 16], [inW(t, ix, o), ay - 32], [inW(t, ix, o), ay + 36], [ix + 10, ay - 16, { align: "left" }], [ix - 10, ay - 16, { align: "right" }]], o);
+    } else {
+      const oo = { color: p.obj, size: 13 };
+      PL.put("Object", [[inW("Object", xo, oo), yo - 12], [xo - 9, yo + 6, { align: "right" }], [xo + 9, yo + 6, { align: "left" }], [inW("Object", xo, oo), yo - 28]], oo);
+      if (!st.atInf && xi > 2 && xi < W - 2) {
+        const t = st.real ? "Image" : "Image (virtual)", o = { color: p.img, size: 13, bg: p.surface2 };
+        const yc = clamp(yi, 4, H - 4), dn = st.m < 0;
+        const y1 = clamp(dn ? yc + 14 : yc - 12, 10, H - 10), y2 = clamp(dn ? yc + 30 : yc - 28, 10, H - 10);
+        PL.put(t, [[inW(t, xi, o), y1], [xi + 9, yc, { align: "left" }], [xi - 9, yc, { align: "right" }], [inW(t, xi, o), y2],
+          [xi + 9, (yc + ay) / 2, { align: "left" }], [xi - 9, (yc + ay) / 2, { align: "right" }]], o);
+      } else if (st.atInf) {
+        const t = "Image at infinity (rays come out parallel)", o = { color: p.img, size: 13, bg: p.surface2, maxW: W - 20 };
+        PL.put(t, [[W - 10, ay + E * 0.9, { align: "right" }], [W - 10, ay - E * 0.9, { align: "right" }], [10, ay + E * 0.9, { align: "left" }], [10, ay - E * 0.9, { align: "left" }]], o);
+      } else {
+        const atLeft = xi <= 2;
+        const where = `Image is ${fmt(Math.abs(st.v), 1)} cm from ${isMirror ? "P" : "O"}`, fF = isMirror ? "F" : "F₁";
+        const t = `${atLeft ? "← " : ""}${where}, off the screen${atLeft ? "" : " →"}\nMove the object away from ${fF} to see it`;
+        const o = { color: p.img, size: W < 560 ? 11 : 13, weight: 700, bg: p.surface2, align: atLeft ? "left" : "right", maxW: W - 20 };
+        const xa = atLeft ? 10 : W - 10, yb = (legRows.length ? legRows[0].y - 16 : H - 6);
+        PL.put(t, [[xa, yb, { base: "bottom" }], [xa, 9, { base: "top" }]], o);
       }
     }
+    // the NCERT table row for this position of the object
+    if (W >= 700) {
+      const headline = `Image: ${row[1]} · ${row[2]} · ${row[3]}`;
+      PL.put(headline, [[W - 10, 9, { base: "top" }], [W - 10, 29, { base: "top" }]], { color: st.real ? p.r1 : p.r3, size: 13, align: "right", weight: 700, bg: p.surface2 }, false);
+    }
+    // a thin strip along a dimension line, so that later labels keep off it
+    const band = (xa, xb, y) => PL.block([Math.min(xa, xb), y - 2, Math.max(xa, xb), y + 2]);
+    // sign convention: distances and heights
+    if (show.sign && !inf) {
+      const c = p.accent, o = { color: c, size: small, weight: 700, bg: p.surface2 };
+      PL.put(`u = ${fmt(st.u, 1)} cm`, along(xo, x0, ydU, [-10, 12]), o);
+      if (showV) PL.put(`v = ${sgnf(st.v, 1)} cm`, along(xi, x0, ydV, [-10, 12]), o);
+      band(xo, x0, ydU); if (showV) band(xi, x0, ydV);
+      const t1 = `h = +${fmt(hObj, 1)} cm`, ym = (ay + yo) / 2;
+      PL.put(t1, [0, 16, -16, 32].flatMap(dy => [[xo - 8, ym + dy, { align: "right" }], [xo + 8, ym + dy, { align: "left" }]]), o);
+      if (showV) {
+        const t2 = `h′ = ${sgnf(st.m * hObj, 2)} cm`, ym2 = (ay + clamp(yi, 4, H - 4)) / 2;
+        PL.put(t2, [0, 16, -16, 32, -32, 48, -48].flatMap(dy => [[xi + 8, ym2 + dy, { align: "left" }], [xi - 8, ym2 + dy, { align: "right" }]]), o);
+      }
+    }
+    // names of points
+    if (show.labels) {
+      const o = { color: lc, size: small, weight: 700, bg: p.surface2 };
+      const n2 = (a, b) => (W < 640 ? b : a);   // shorter names on a narrow screen
+      // the labels of the dimension lines, then the lines themselves are kept clear
+      const fOk = Fx > 6 && Fx < W - 6, cOk = isMirror && Cc > 6 && Cc < W - 6;
+      // on a crowded (narrow) diagram the label shrinks to just "f"
+      if (fOk && !PL.put("focal length f", along(x0, Fx, ydF, isMirror ? [-9, 11] : [11, -9]), { color: lc, size: small }, false))
+        PL.put("f", along(x0, Fx, ydF, [-9, 11]), { color: lc, size: small + 1, weight: 700 });
+      if (cOk) PL.put(n2("radius of curvature R = 2f", "R = 2f"), along(x0, Cc, ydR, [11, -9]), { color: lc, size: small });
+      if (fOk) band(x0, Fx, ydF);
+      if (cOk) band(x0, Cc, ydR);
+      const oc = isMirror ? "Pole (P)" : "Optical centre (O)";
+      PL.put(oc, [-12, -28, -44, 37, -60, 55].flatMap(dy => [[x0 + 8, ay + dy, { align: "left" }], [x0 - 8, ay + dy, { align: "right" }]]), o);
+      if (isMirror) {
+        if (fOk) PL.put("Principal focus (F)", near("Principal focus (F)", Fx, ay, o, [37, -30, -48, -66, 55, -84]), o);
+        const tC = n2("Centre of curvature (C)", "Centre of\ncurvature (C)");
+        if (cOk) PL.put(tC, near(tC, Cc, ay, o, W < 640 ? [-24, 46, -46, -68] : [-16, 39, -32, -50]), o);
+      } else {
+        const tF = n2("Principal focus", "Focus");
+        [F1x, Fx].forEach(x => PL.put(tF, near(tF, x, ay, o, [37, -30, -48, -66, 55, -84]), o));
+      }
+      PL.put("Principal axis", [[8, ay - 10, { align: "left" }], [W - 8, ay - 10, { align: "right" }], [8, ay + 12, { align: "left" }], [W - 8, ay + 12, { align: "right" }],
+        ...[0.25, 0.45, 0.65].flatMap(f => [[W * f, ay - 10, { align: "left" }], [W * f, ay + 12, { align: "left" }]]),
+        [8, ay - 26, { align: "left" }], [W - 8, ay - 26, { align: "right" }], [8, ay + 34, { align: "left" }], [W - 8, ay + 34, { align: "right" }]], { ...o, bg: null });
+    }
+    if (!isMirror && show.cover) PL.put("Black paper", [0.75, 0.9, 0.55, 0.35].flatMap(k => [[x0 + 22, ay - E * k, { align: "left" }], [x0 - 22, ay - E * k, { align: "right" }]]), { color: p.soft, size: small, bg: p.surface2 });
+    if (show.labels) {
+      // "aperture" runs up beside its arrow, at a place along it where there is room
+      const ta = "aperture", tw = textWidth(ctx, ta, small), fh = small * CR.fontScale;
+      const spots = [-0.45, 0.45, -0.72, 0.72, -0.2, 0.2, -0.85, 0.85].flatMap(k => [[axA + fh / 2 + 5, ay + k * E], [axA - fh / 2 - 5, ay + k * E], [axA + fh * 1.5 + 9, ay + k * E]]);
+      const boxA = ([x, y]) => [x - fh / 2 - 2, y - tw / 2 - 2, x + fh / 2 + 2, y + tw / 2 + 2];
+      const spot = spots.find(sp => PL.cost(boxA(sp)) <= 0);
+      // no room beside the arrow: write it level, just above or below the arrow's ends
+      const level = !spot && PL.put(ta, [[axA, ay - E - 12], [axA, ay + E + 12], [axA + 8, ay - E - 2, { align: "left" }], [axA + 8, ay + E + 2, { align: "left" }]], { color: lc, size: small }, false);
+      if (!level && (spot || W >= 640)) {   // on a crowded phone screen the arrow is left without its word
+        const sp = spot || spots.reduce((a, b) => (PL.cost(boxA(b)) < PL.cost(boxA(a)) ? b : a));
+        ctx.save(); ctx.translate(sp[0], sp[1]); ctx.rotate(-Math.PI / 2);
+        label(ctx, ta, 0, 0, { color: lc, size: small }); ctx.restore();
+        PL.block(boxA(sp));
+      }
+    }
+    // notes at the top
+    const notes = inf ? ["Parallel rays from an object at infinity"] : skipped;
+    notes.forEach(t => {
+      const o = { color: p.soft, size: small, bg: p.surface2, base: "top", maxW: W - 24 };
+      const below = SB ? sby + SB.h + 6 : 30;
+      PL.put(t, [[10, 9, { align: "left" }], [W - 10, 9, { align: "right" }], [10, 31, { align: "left" }], [10, below, { align: "left" }], [W - 10, 31, { align: "right" }], [10, 53, { align: "left" }]], o);
+    });
+
+    // legend
+    legRows.forEach(r => {
+      roundRect(ctx, 4, r.y - 10, r.w, 20, 6); ctx.fillStyle = p.surface2; ctx.fill();
+      let lx = 10;
+      r.items.forEach(([[c, t], w]) => { line(ctx, lx, r.y, lx + 18, r.y, c, 3); label(ctx, t, lx + 23, r.y, { color: p.soft, size: small, align: "left" }); lx += w; });
+    });
 
     /* ---- readouts ---- */
     if (tbl) tbl.highlight(reg);
@@ -605,7 +729,7 @@ CR.sims.optics = function (stage, opt = {}) {
     if (!isMirror && show.cover) items.push({ k: "Half the lens covered", v: "A complete image is still formed by the rays through the uncovered half, but it is less bright.", wide: true });
     ro(items);
     last = { W, H, ay, E, ho, xo, yo, xi, yi, x0, reg, inf, v: st.v, m: st.m, atInf: st.atInf, real: st.real,
-      offscreen: !inf && !st.atInf && !(xi > 2 && xi < W - 2) };
+      offscreen: !inf && !st.atInf && !(xi > 2 && xi < W - 2), signBox: SB ? [sbx, sby, sbx + SB.w, sby + SB.h] : null };
   }
 
   onType();
@@ -614,9 +738,9 @@ CR.sims.optics = function (stage, opt = {}) {
     info: () => last,
     set(o) {
       if (o.type) { type = o.type; typeSeg.set(type); onType(); }
-      if (o.F != null) { F = o.F; sF.value = F; }
+      if (o.F != null) { F = o.F; sF.value = F; if (o.U == null && !o.inf && !inf) U = fitU(U); }
       if (o.inf) inf = true;
-      else if (o.U != null) { inf = false; U = o.U; }
+      else if (o.U != null) { inf = false; U = fitU(o.U); }
       if (o.h != null) { hObj = o.h; nH.set(hObj); }
       if (o.rays) { Object.assign(rays, o.rays); rayT.sync(); }
       ["labels", "sign", "cover"].forEach(k => { if (o[k] != null) show[k] = !!o[k]; });
