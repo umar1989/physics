@@ -5,6 +5,7 @@
    ============================================================ */
 
 const SITE_TITLE = "Physics Notes";
+const AUTHOR = { name: "A. Umarmukthar", url: "https://umarmukthar.in/" };   // the author's resume website
 
 const CHAPTERS = [
   {
@@ -40,7 +41,7 @@ const CHAPTERS = [
       "range of hearing", "infrasound", "ultrasound", "SONAR", "human ear"]
   },
   {
-    id: "class-10/light-reflection-refraction", cls: 10, num: 9, title: "Light – Reflection and Refraction",
+    id: "class-10/light-reflection-refraction", classroom: "light", cls: 10, num: 9, title: "Light – Reflection and Refraction",
     topics: ["reflection", "laws of reflection", "plane mirror", "spherical mirrors", "concave mirror",
       "convex mirror", "pole", "centre of curvature", "focus", "focal length", "R = 2f",
       "mirror formula", "1/v + 1/u = 1/f", "magnification", "sign convention", "ray diagrams",
@@ -49,7 +50,7 @@ const CHAPTERS = [
       "power of a lens", "dioptre", "P = 1/f"]
   },
   {
-    id: "class-10/human-eye", cls: 10, num: 10, title: "The Human Eye and the Colourful World",
+    id: "class-10/human-eye", classroom: "eye", cls: 10, num: 10, title: "The Human Eye and the Colourful World",
     topics: ["human eye", "cornea", "iris", "pupil", "eye lens", "retina", "ciliary muscles",
       "power of accommodation", "near point 25 cm", "far point", "myopia", "near-sightedness",
       "hypermetropia", "far-sightedness", "presbyopia", "correction of defects", "prism",
@@ -58,7 +59,7 @@ const CHAPTERS = [
       "scattering of light", "Tyndall effect", "blue sky", "red sunset"]
   },
   {
-    id: "class-10/electricity", cls: 10, num: 11, title: "Electricity",
+    id: "class-10/electricity", classroom: "electricity", cls: 10, num: 11, title: "Electricity",
     topics: ["electric charge", "coulomb", "electric current", "I = Q/t", "ampere", "potential difference",
       "V = W/Q", "volt", "circuit diagram symbols", "Ohm's law", "V = IR", "resistance", "ohm",
       "resistivity", "R = ρl/A", "resistors in series", "resistors in parallel",
@@ -66,7 +67,7 @@ const CHAPTERS = [
       "P = I²R", "P = V²/R", "kilowatt hour", "fuse", "ammeter", "voltmeter"]
   },
   {
-    id: "class-10/magnetic-effects", cls: 10, num: 12, title: "Magnetic Effects of Electric Current",
+    id: "class-10/magnetic-effects", classroom: "magnetism", cls: 10, num: 12, title: "Magnetic Effects of Electric Current",
     topics: ["magnetic field", "magnetic field lines", "compass", "Oersted", "straight conductor",
       "right-hand thumb rule", "circular loop", "solenoid", "electromagnet",
       "force on a current-carrying conductor", "Fleming's left-hand rule",
@@ -125,6 +126,7 @@ function buildHeader() {
       <nav class="header-nav" aria-label="Classes">
         <a href="${ROOT}index.html#class-9" class="${current && current.cls === 9 ? "active" : ""}">Class 9</a>
         <a href="${ROOT}index.html#class-10" class="${current && current.cls === 10 ? "active" : ""}">Class 10</a>
+        <a href="${ROOT}class-10/classroom/" title="Interactive Class 10 Physics classroom">Classroom</a>
       </nav>
       <div class="search-wrap">
         <input id="search" type="search" placeholder="Search topics or formulas…" autocomplete="off" aria-label="Search">
@@ -245,11 +247,25 @@ function buildHome() {
   });
 }
 
+/* ---------- Class 10 chapter → the same chapter in the interactive classroom ---------- */
+function buildClassroomLink() {
+  const c = CHAPTERS.find(ch => ch.id === CURRENT);
+  const h1 = document.querySelector(".page h1");
+  if (!c || !c.classroom || !h1) return;
+  const a = document.createElement("a");
+  a.className = "classroom-link no-print";
+  a.href = `${ROOT}class-10/classroom/#${c.classroom}`;
+  a.innerHTML = `<strong>Teach this chapter interactively →</strong> <span>Every NCERT section with simulations, activities, examples and exercises, for the projector.</span>`;
+  const after = document.querySelector(".page [data-print]") || h1;
+  after.insertAdjacentElement("afterend", a);
+}
+
 /* ---------- Footer ---------- */
 function buildFooter() {
   const f = document.createElement("footer");
   f.className = "site-footer";
-  f.innerHTML = `${SITE_TITLE} · CBSE Class 9 &amp; 10 · Prepared by Umar Mukthar, M.Sc., B.Ed.`;
+  f.innerHTML = `${SITE_TITLE} · CBSE Class 9 &amp; 10 · <a href="${ROOT}class-10/classroom/">Interactive Class 10 classroom</a><br>` +
+    `Prepared by <a href="${AUTHOR.url}">${AUTHOR.name}</a>, M.Sc., B.Ed., Physics teacher`;
   document.body.appendChild(f);
 }
 
@@ -257,6 +273,7 @@ buildHeader();
 buildHome();
 buildToc();
 buildPager();
+buildClassroomLink();
 buildFooter();
 setupSearch();
 setupPrint();

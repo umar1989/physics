@@ -501,3 +501,6 @@ table.ncert tr.hl th:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 
 .symbol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.6rem; margin-top: 0.8rem; }
 .tag { display: inline-block; font-size: 0.74em; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 0.05rem 0.5rem; margin-right: 0.4rem; vertical-align: 0.1em; }
+.credit { font-size: 0.85rem; color: var(--text-soft); margin: 0.4rem 0 0; }
+.credit a { color: var(--accent); }
+@media print { .credit { display: none; } }
